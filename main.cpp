@@ -4,89 +4,45 @@
 #include <stdlib.h>
 
 
-
 int main()
 {
     List_t List = {};
-    size_t ImgQuant = 0;
 
-    ListCtor(&List, 16);
+    size_t Capacity = 16;
+    LIST_ASSERT(ListCtor(&List, Capacity));
+
+
+    ListElem_t InsertElem  = 10;
+    ListElem_t EraseElem   = 0;
     size_t     InsertPlace = 0;
-    ListElem_t PopElem     = 0;
-
-    for (ListElem_t i = 0; i < 10; i++)
-    {
-        LIST_ASSERT(PushBack(&List, i + 1, &InsertPlace));
-    }
-
-    // for (ListElem_t i = 0; i < 0; i++)
-    // {
-    //     LIST_ASSERT(PushFront(&List, i + 101, &InsertPlace));
-
-    // }
-
-    InsertAfter(&List, GetTail(&List), 66, &InsertPlace);
-
-    InsertBefore(&List, GetHead(&List), 66, &InsertPlace);
-
-    InsertBefore(&List, 5, 66, &InsertPlace);
-
-    InsertAfter(&List, 5, 66, &InsertPlace);
-
-    // DUMP(List);
-    // PrintList(&List);
-
-    for (ListElem_t i = 0; i < 1; i++)
-    {
-        PopBack(&List, &PopElem);
-    }
-
-    for (ListElem_t i = 0; i < 2; i++)
-    {
-        PopFront(&List, &PopElem);
-        printf("PopElem = %d\n", PopElem);
-    }
-
-    InsertAfter(&List, GetTail(&List), 66, &InsertPlace);
-    InsertBefore(&List, 5, 66, &InsertPlace);
-    InsertBefore(&List, GetHead(&List), 66, &InsertPlace);
+    size_t     RefElem     = 2;
 
 
-    for (ListElem_t i = 5; i < 10; i++)
-    {
-        PushBack(&List, i + 101, &InsertPlace);
-    }
+    LIST_ASSERT(PushBack    (&List,          InsertElem, &InsertPlace));
+    LIST_ASSERT(PushFront   (&List,          InsertElem, &InsertPlace));
+    LIST_ASSERT(InsertAfter (&List, RefElem, InsertElem, &InsertPlace));
+    LIST_ASSERT(InsertBefore(&List, RefElem, InsertElem, &InsertPlace));
 
-    // Erase(&List, GetHead(&List), &PopElem);
-
-    // DUMP(List);
-
-
-    // PopBack(&List, &PopElem);
-    // PushBack(&List, 17);
-
-    // PrintList(&List);
-    // DUMP(List);
+    LIST_ASSERT(PopBack (&List,          &EraseElem));
+    LIST_ASSERT(PopFront(&List,          &EraseElem));
+    LIST_ASSERT(Erase   (&List, RefElem, &EraseElem));
 
 
-    // printf("\n");
+    size_t Head = GetHead(&List);   // begin of list
+    size_t Tail = GetTail(&List);   // end   of list
 
-    // for (size_t i = 0; i < 5; i++)
-    // {
-    //     PopBack(&List, &PopElem);
-    //     // printf("Pop elem = %d\n", PopElem);
-    // }
+    LIST_ASSERT(InsertBefore(&List, Head, InsertElem, &InsertPlace));  // <=> LIST_ASSERT(PushFront(&List, InsertElem, &InsertPlace));
+    LIST_ASSERT(InsertAfter (&List, Tail, InsertElem, &InsertPlace));  // <=> LIST_ASSERT(PushBack (&List, InsertElem, &InsertPlace));
+    LIST_ASSERT(Erase       (&List, Head, &EraseElem));                // <=> LIST_ASSERT(PopFront (&List, InsertElem, &InsertPlace));
+    LIST_ASSERT(Erase       (&List, Tail, &EraseElem));                // <=> LIST_ASSERT(PopBack  (&List, InsertElem, &InsertPlace));
 
-    // GraphicDump(&List);
 
-    DUMP(List);
-    MakeDump(&List, &ImgQuant);
-
+    CONSOLE_DUMP(List);
+    GRAPHIC_DUMP(List);
     PrintList(&List);
+    
 
-    ListDtor(&List);
+    LIST_ASSERT(ListDtor(&List));
+
     return 0;
 }
-
-
-

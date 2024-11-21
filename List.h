@@ -7,6 +7,7 @@
 
 typedef int ListElem_t;
 
+
 struct CodePlace
 {
     const char* File;
@@ -52,14 +53,16 @@ ListErrorType PushFront        (List_t* List, const ListElem_t PushElem, size_t*
 ListErrorType Erase            (List_t* List, const size_t EraseElemPlace, ListElem_t* EraseELem);
 ListErrorType PopBack          (List_t* List, ListElem_t* PopElem);
 ListErrorType PopFront         (List_t* List, ListElem_t* PopElem);
-void          Dump             (const List_t* List, const char* File, int Line, const char* Func);
-void          GraphicDump      (const List_t* List);
 void          PrintList        (const List_t* List);
 size_t        GetHead          (const List_t* List);
 size_t        GetTail          (const List_t* List);
+
+
 ListErrorType Verif            (List_t* List, ListErrorType* Err, const char* File, const int Line, const char* Func);
 void          ListAssertPrint  (ListErrorType* Err, const char* File, const int Line, const char* Func);
-void          MakeDump         (const List_t* List, size_t* ImgQuant);
+
+void          GraphicDump      (const List_t* List, const char* File, const int Line, const char* Func);
+void          ConsoleDump      (const List_t* List, const char* File, int Line, const char* Func);
 
 
 #define COMPILER_RETURN_IF_ERR(Err) do   \
@@ -69,7 +72,7 @@ void          MakeDump         (const List_t* List, size_t* ImgQuant);
     {                                        \
         return ErrCopy;                       \
     }                                          \
-} while (0);                                    \
+} while (0)                                     \
 
 
 #define LIST_ASSERT(Err) do                                      \
@@ -86,11 +89,10 @@ void          MakeDump         (const List_t* List, size_t* ImgQuant);
     
 #define LIST_VERIF(ListPtr, Err) Verif(ListPtr, &Err, __FILE__, __LINE__, __func__)
 
-#define FREE(Arr) free(Arr); Arr = NULL;
+#define FREE(ptr) free(ptr); ptr = NULL;
 
-#define DUMP(List) Dump(&List, __FILE__, __LINE__, __func__)
+#define CONSOLE_DUMP(List) ConsoleDump(&List, __FILE__, __LINE__, __func__)
 
-
-
+#define GRAPHIC_DUMP(List) GraphicDump(&List, __FILE__, __LINE__, __func__)
 
 #endif

@@ -5,14 +5,6 @@
 #include <string.h>
 #include "List.h"
 
-struct ListCodePlace
-{
-    const char* File;
-    int         Line;
-    const char* Func;
-};
-
-
 static size_t       GetFree          (const List_t* List);
 static size_t       GetCapacity      (const List_t* List);
 static size_t       GetDataSize      (const List_t* List);
@@ -29,8 +21,10 @@ static bool IsListEmpty                   (const List_t* List);
 static void ErrPlaceCtor    (ListErrorType* Err, const char* File, const int Line, const char* Func);
 static void PrintPlace      (const char* File, int Line, const char* Function);
 
+static void GraphicDumpHelper  (const List_t* List, const char* File, const int Line, const char* Func);
 static void DotBegin           (FILE* dotFile);
 static void DotEnd             (FILE* dotFile);
+static void DotCreateDumpPlace (FILE* dotFile, const char* File, const int Line, const char* Func);
 static void DotCreateNode      (FILE* dotFile, const List_t* List, const size_t node_i);
 static void DotCreateAllNodes  (FILE* dotFile, const List_t* List);
 static void DotCreateNextEdges (FILE* dotFile, const List_t* List);
@@ -46,6 +40,8 @@ const ListElem_t Poison = 666;
 
 ListErrorType ListCtor(List_t* List, size_t Capacity)
 {
+    assert(List);
+
     ListErrorType Err = {};
  
     List->Capacity    = Capacity + 1;
@@ -58,7 +54,6 @@ ListErrorType ListCtor(List_t* List, size_t Capacity)
         Err.CtorCallocNull = 1;
         return LIST_VERIF(List, Err);
     }
-
 
     List->Data[GetTail(List)].Prev = List->Data[GetTail(List)].Prev;
     List->Data[0]            .Next = List->Data[GetTail(List)].Next;
@@ -80,6 +75,7 @@ ListErrorType ListCtor(List_t* List, size_t Capacity)
 
 ListErrorType ListDtor(List_t* List)
 {
+    assert(List);
     ListErrorType Err = {};
     List->Capacity = 0;
 
@@ -91,6 +87,8 @@ ListErrorType ListDtor(List_t* List)
 
 ListErrorType InsertAfter(List_t* List, const size_t RefElem, const ListElem_t InsertElem, size_t* InsertPlace)
 {
+    assert(List);
+
     ListErrorType Err = {};
 
     if (IsListFull(List))
@@ -124,6 +122,8 @@ ListErrorType InsertAfter(List_t* List, const size_t RefElem, const ListElem_t I
 
 ListErrorType InsertBefore(List_t* List, const size_t RefElem, const ListElem_t InsertElem, size_t* InsertPlace)
 {
+    assert(List);
+
     ListErrorType Err = {};
 
     if (IsListFull(List))
@@ -159,6 +159,8 @@ ListErrorType InsertBefore(List_t* List, const size_t RefElem, const ListElem_t 
 
 ListErrorType Erase(List_t* List, const size_t ErasePlace, ListElem_t* EraseElem)
 {
+    assert(List);
+
     ListErrorType Err = {};
 
     if (IsListEmpty(List))
@@ -195,6 +197,8 @@ ListErrorType Erase(List_t* List, const size_t ErasePlace, ListElem_t* EraseElem
 
 ListErrorType PushBack(List_t* List, const ListElem_t PushElem, size_t* PushPlace)
 {
+    assert(List);
+
     ListErrorType Err = {};
 
     if (IsListFull(List))
@@ -215,6 +219,8 @@ ListErrorType PushBack(List_t* List, const ListElem_t PushElem, size_t* PushPlac
 
 ListErrorType PushFront(List_t* List, const ListElem_t PushElem, size_t* PushPlace)
 {
+    assert(List);
+
     ListErrorType Err = {};
 
     if (IsListFull(List))
@@ -235,6 +241,8 @@ ListErrorType PushFront(List_t* List, const ListElem_t PushElem, size_t* PushPla
 
 ListErrorType PopBack(List_t* List, ListElem_t* PopElem)
 {
+    assert(List);
+
     ListErrorType Err = {};
 
     if (IsListEmpty(List))
@@ -255,6 +263,8 @@ ListErrorType PopBack(List_t* List, ListElem_t* PopElem)
 
 ListErrorType PopFront(List_t* List, ListElem_t* PopElem)
 {
+    assert(List);
+
     ListErrorType Err = {};
 
     if (IsListEmpty(List))
@@ -286,6 +296,7 @@ static void ListElemCtor(DataInfo* Elem, const ListElem_t Value, const size_t Ne
 
 static ListElem_t GetDataElem(const List_t* List, size_t Data_i)
 {
+    assert(List);
     return List->Data[Data_i].Elem;
 }
 
@@ -293,6 +304,7 @@ static ListElem_t GetDataElem(const List_t* List, size_t Data_i)
 
 size_t GetTail(const List_t* List)
 {
+    assert(List);
     return List->Data[0].Prev;
 }
 
@@ -300,6 +312,7 @@ size_t GetTail(const List_t* List)
 
 static size_t GetNextIndex(const List_t* List, size_t NowIndex)
 {
+    assert(List);   
     return List->Data[NowIndex].Next;
 }
 
@@ -307,6 +320,7 @@ static size_t GetNextIndex(const List_t* List, size_t NowIndex)
 
 static size_t GetPrevIndex(const List_t* List, size_t NowIndex)
 {
+    assert(List);
     return List->Data[NowIndex].Prev;
 }
 
@@ -314,6 +328,7 @@ static size_t GetPrevIndex(const List_t* List, size_t NowIndex)
 
 size_t GetHead(const List_t* List)
 {
+    assert(List);
     return List->Data[0].Next;
 }
 
@@ -321,6 +336,7 @@ size_t GetHead(const List_t* List)
 
 static size_t GetFree(const List_t* List)
 {
+    assert(List);
     return List->Free;
 }
 
@@ -328,6 +344,7 @@ static size_t GetFree(const List_t* List)
 
 static size_t GetCapacity(const List_t* List)
 {
+    assert(List);
     return List->Capacity;
 }
 
@@ -335,6 +352,7 @@ static size_t GetCapacity(const List_t* List)
 
 static size_t GetDataSize(const List_t* List)
 {
+    assert(List);
     return List->Size;
 }
 
@@ -342,6 +360,7 @@ static size_t GetDataSize(const List_t* List)
 
 static bool IsListFull(const List_t* List)
 {
+    assert(List);
     return GetCapacity(List) == GetDataSize(List) + 1;
 }
 
@@ -349,6 +368,7 @@ static bool IsListFull(const List_t* List)
 
 static bool IsListEmpty(const List_t* List)
 {
+    assert(List);
     return GetDataSize(List) == 0;
 }
 
@@ -356,6 +376,8 @@ static bool IsListEmpty(const List_t* List)
 
 static size_t GetNextInCtor(const List_t* List, size_t Data_i)
 {
+    assert(List);
+
     size_t temp_next = (Data_i + 1) % (GetCapacity(List));
     return temp_next ? temp_next : 1;
 }
@@ -364,6 +386,8 @@ static size_t GetNextInCtor(const List_t* List, size_t Data_i)
 
 static size_t GetPrevInCtor(const List_t* List, size_t Data_i)
 {
+    assert(List);
+    
     size_t temp_prev = (Data_i - 1) % (GetCapacity(List)); 
     return temp_prev ? temp_prev : GetCapacity(List) - 1;
 }
@@ -373,6 +397,8 @@ static size_t GetPrevInCtor(const List_t* List, size_t Data_i)
 ListErrorType Verif(List_t* List, ListErrorType* Err, const char* File, const int Line, const char* Func)
 {
     assert(List);
+    assert(File);
+    assert(Func);
 
     ErrPlaceCtor(Err, File, Line, Func);
 
@@ -384,6 +410,8 @@ ListErrorType Verif(List_t* List, ListErrorType* Err, const char* File, const in
 static void ErrPlaceCtor(ListErrorType* Err, const char* File, const int Line, const char* Func)
 {
     assert(Err);
+    assert(File);
+    assert(Func);
 
     Err->Place.File = File;
     Err->Place.Line = Line;
@@ -392,8 +420,12 @@ static void ErrPlaceCtor(ListErrorType* Err, const char* File, const int Line, c
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void Dump(const List_t* List, const char* File, int Line, const char* Func)
+void ConsoleDump(const List_t* List, const char* File, const int Line, const char* Func)
 {
+    assert(List);
+    assert(File);
+    assert(Func);
+
     COLOR_PRINT(GREEN, "DUMP BEGIN\n\n");
 
     COLOR_PRINT(WHITE, "Dump made int:\n");
@@ -424,6 +456,8 @@ void Dump(const List_t* List, const char* File, int Line, const char* Func)
 
 void PrintList(const List_t* List)
 {   
+    assert(List);
+
     COLOR_PRINT(VIOLET, "List:\n");
     size_t data_i = GetHead(List);
     for (size_t i = 0; i < GetDataSize(List); i++)
@@ -438,9 +472,12 @@ void PrintList(const List_t* List)
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void PrintPlace(const char* File, int Line, const char* Function)
+static void PrintPlace(const char* File, int Line, const char* Func)
 {
-    COLOR_PRINT(WHITE, "File [%s]\nLine [%d]\nFunc [%s]\n", File, Line, Function);
+    assert(File);
+    assert(Func);
+
+    COLOR_PRINT(WHITE, "File [%s]\nLine [%d]\nFunc [%s]\n", File, Line, Func);
     return;
 }
 
@@ -448,6 +485,8 @@ static void PrintPlace(const char* File, int Line, const char* Function)
 
 static void PrintError(ListErrorType* Err)
 {
+    assert(Err);
+
     if (Err->IsFatalError == 0)
     {
         return;
@@ -487,7 +526,28 @@ void ListAssertPrint(ListErrorType* Err, const char* File, const int Line, const
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void GraphicDump(const List_t* List)
+void GraphicDump(const List_t* List, const char* File, const int Line, const char* Func)
+{
+    static size_t ImgQuant = 0;
+
+    static const size_t MaxFileNameLen = 128;
+    char outFile[MaxFileNameLen] = {};
+    sprintf(outFile, "out%lu.png", ImgQuant);
+    ImgQuant++;
+
+    static const size_t MaxCommandLen = 256;
+    char command[MaxCommandLen] = {};
+    sprintf(command, "dot -Tpng List.dot > %s", outFile);
+
+    GraphicDumpHelper(List, File, Line, Func);
+    system(command);
+
+    return;
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------
+
+static void GraphicDumpHelper(const List_t* List, const char* File, const int Line, const char* Func)
 {
     assert(List);
 
@@ -496,6 +556,7 @@ void GraphicDump(const List_t* List)
     assert(dotFile);
 
     DotBegin(dotFile);
+    DotCreateDumpPlace(dotFile, File, Line, Func);
     DotCreateAllNodes(dotFile, List);
     DotCreateEdges(dotFile, List);
     DotCreateNextEdges(dotFile, List);
@@ -513,9 +574,7 @@ void GraphicDump(const List_t* List)
 static void DotBegin(FILE* dotFile)
 {
     assert(dotFile);
-    // fprintf(dotFile, "digraph G{\nrankdir=LR;\ngraph [bgcolor=\"#31353b\"];\n");
-    fprintf(dotFile, "digraph G{\nrankdir=LR;\ngraph [bgcolor=\"#31234b\"];\n");
-    
+    fprintf(dotFile, "digraph G{\nrankdir=LR;\ngraph [bgcolor=\"#31353b\"];\n");
     return;
 }
 
@@ -538,7 +597,7 @@ static void DotCreateNode(FILE* dotFile, const List_t* List, const size_t node_i
     DataInfo Data_i = List->Data[node_i];
 
     fprintf(dotFile, "node%lu", node_i);
-    fprintf(dotFile, "[shape=record, style=filled, fillcolor=\"#7993ba\"");
+    fprintf(dotFile, "[shape=record, style=filled, fillcolor=\"#3155b\"");
     fprintf(dotFile, "label  =\"index : %lu   ", node_i);
     fprintf(dotFile, "|elem: %d   ",       Data_i.Elem);
     fprintf(dotFile, "|<f0> next: %lu  ",  Data_i.Next);
@@ -569,7 +628,7 @@ static void DotCreateNextEdges(FILE* dotFile, const List_t* List)
     assert(dotFile);
     assert(List);
 
-    fprintf(dotFile, "edge[color=\"red\", fontsize=12, constraint=false];\n");
+    fprintf(dotFile, "edge[color=\"cyan\", fontsize=12, constraint=false];\n");
 
     for (size_t node_i = 0; node_i < GetCapacity(List); node_i++)
     {
@@ -586,7 +645,7 @@ static void DotCreatePrevEdges(FILE* dotFile, const List_t* List)
     assert(dotFile);
     assert(List);
 
-    fprintf(dotFile, "edge[color=\"cyan\", fontsize=12, constraint=false];\n");
+    fprintf(dotFile, "edge[color=\"red\", fontsize=12, constraint=false];\n");
 
     for (size_t node_i = 0; node_i < GetCapacity(List); node_i++)
     {
@@ -621,7 +680,7 @@ static void DotCreateRestList(FILE* dotFile, const List_t* List)
     assert(List);
     
     fprintf(dotFile, "node[shape = octagon, style = \"filled\", fillcolor = \"lightgray\"];\n");
-    fprintf(dotFile, "edge[color = \"lightgreen\"];\n");
+    fprintf(dotFile, "edge[color = \"red\"];\n");
     fprintf(dotFile, "head->node%zu;\n", GetHead(List));
     fprintf(dotFile, "tail->node%zu;\n", GetTail(List));
     fprintf(dotFile, "free->node%zu;\n", GetFree(List));
@@ -633,23 +692,17 @@ static void DotCreateRestList(FILE* dotFile, const List_t* List)
 
 //-------------------------------------------------------------------------------------------------------------------------------------
 
-void MakeDump(const List_t* List, size_t* ImgQuant)
+static void DotCreateDumpPlace(FILE* dotFile, const char* File, const int Line, const char* Func)
 {
-    static const size_t MaxFileNameLen = 128;
-    char outFile[MaxFileNameLen] = {};
-    sprintf(outFile, "out%lu.png", *ImgQuant);
+    assert(dotFile);
 
-
-    static const size_t MaxCommandLen = 256;
-    char command[MaxCommandLen] = {};
-    sprintf(command, "dot -Tpng List.dot > %s", outFile);
-
-
-    GraphicDump(List);
-    system(command);
-
-    (*ImgQuant)++;
-
+    fprintf(dotFile, "place");
+    fprintf(dotFile, "[shape=record, style=filled, fillcolor=\"#3155b\"");
+    fprintf(dotFile, "label  =\"");
+    fprintf(dotFile, "file: %s   ",       File);
+    fprintf(dotFile, "|<f0> line: %d  ",  Line);
+    fprintf(dotFile, "|<f1> func: %s\",", Func); 
+    fprintf(dotFile, "color = \"#008080\"];\n"); 
     return;
 }
 
