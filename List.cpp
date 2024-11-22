@@ -60,7 +60,7 @@ ListErrorType ListCtor(List_t* List, size_t Capacity)
     List->Data[GetTail(List)].Next = 0;
     List->Free                     = 1;
 
-    ListElemCtor(&List->Data[0], Poison, 1, 1); 
+    ListElemCtor(&List->Data[0], Poison, 0, 0); 
 
     for (size_t Data_i = 1; Data_i < GetCapacity(List); Data_i++)
     {
@@ -100,20 +100,20 @@ ListErrorType InsertAfter(List_t* List, const size_t RefElem, const ListElem_t I
 
     List->Size++;
  
-    size_t Head       = GetHead(List);
-    size_t Tail       = GetTail(List);
     size_t Free       = GetFree(List);
+    size_t PrevFree   = GetPrevIndex(List, Free);
     size_t NextFree   = GetNextIndex(List, Free);
     size_t NextRef    = GetNextIndex(List, RefElem);
 
-    *InsertPlace             = Free;
-    List->Data[Free]   .Elem = InsertElem;
-    List->Data[RefElem].Next = Free;
-    List->Data[NextRef].Prev = Free;
-    List->Data[Free]   .Prev = RefElem;
-    List->Data[0]      .Prev = (RefElem == Tail) ? Free : Tail;
-    List->Data[Free]   .Next = (RefElem == Tail) ? Head : NextRef;
-    List->Free               = NextFree;
+    *InsertPlace              = Free;
+    List->Data[Free]    .Elem = InsertElem;
+    List->Data[RefElem] .Next = Free;
+    List->Data[NextRef] .Prev = Free;
+    List->Data[Free]    .Prev = RefElem;
+    List->Data[Free]    .Next = NextRef;
+    List->Free                = NextFree;
+    List->Data[NextFree].Prev = PrevFree;
+    List->Data[PrevFree].Next = NextFree;
 
     return LIST_VERIF(List, Err);
 }
@@ -135,22 +135,20 @@ ListErrorType InsertBefore(List_t* List, const size_t RefElem, const ListElem_t 
 
     List->Size++;
 
-    size_t Head       = GetHead(List);
-    size_t Tail       = GetTail(List);
     size_t Free       = GetFree(List);
+    size_t PrevFree   = GetPrevIndex(List, Free);
     size_t NextFree   = GetNextIndex(List, Free);
     size_t PrevRef    = GetPrevIndex(List, RefElem);
 
-    *InsertPlace             = Free;
-    List->Data[Free]   .Elem = InsertElem;
-    List->Data[PrevRef].Next = Free;
-    List->Data[Free]   .Next = RefElem;
-    List->Data[Free]   .Prev = PrevRef;
-    List->Data[0]      .Next = (Head == RefElem) ? Free : Head;
-    List->Data[Head]   .Prev = GetTail(List);
-    List->Data[Tail]   .Next = GetHead(List);
-    List->Data[RefElem].Prev = Free;
-    List->Free               = NextFree;
+    *InsertPlace              = Free;
+    List->Data[Free]    .Elem = InsertElem;
+    List->Data[Free]    .Next = RefElem;
+    List->Data[Free]    .Prev = PrevRef;
+    List->Data[RefElem] .Prev = Free;
+    List->Data[PrevRef] .Next = Free;
+    List->Free                = NextFree;
+    List->Data[NextFree].Prev = PrevFree;
+    List->Data[PrevFree].Next = NextFree;
 
     return LIST_VERIF(List, Err);
 }
@@ -172,24 +170,24 @@ ListErrorType Erase(List_t* List, const size_t ErasePlace, ListElem_t* EraseElem
 
     List->Size--;
 
-    size_t Head      = GetHead(List);
-    size_t Tail      = GetTail(List);
-    size_t PrevTail  = GetPrevIndex(List, Tail);
-    size_t NextHead  = GetNextIndex(List, Head);
     size_t Free      = GetFree(List);
+    size_t PrevFree  = GetPrevIndex(List, Free);
+    size_t NextFree  = GetNextIndex(List, Free);
     size_t PrevErase = GetPrevIndex(List, ErasePlace);
     size_t NextErase = GetNextIndex(List, ErasePlace);
 
     *EraseElem                  = GetDataElem(List, ErasePlace);
     List->Data[ErasePlace].Elem = Poison;
+
     List->Data[ErasePlace].Next = Free;
+    List->Data[ErasePlace].Prev = PrevFree;
     List->Data[PrevErase] .Next = NextErase;
     List->Data[NextErase] .Prev = PrevErase;
-    List->Data[0]         .Next = (ErasePlace == Head) ? NextHead : Head;
-    List->Data[0]         .Prev = (ErasePlace == Tail) ? PrevTail : Tail;
     List->Data[Free]      .Prev = Free;
     List->Free                  = ErasePlace;
-
+    List->Data[PrevFree]  .Next = ErasePlace;
+    List->Data[NextFree]  .Prev = ErasePlace;
+    
     return LIST_VERIF(List, Err);
 }
 
@@ -208,7 +206,6 @@ ListErrorType PushBack(List_t* List, const ListElem_t PushElem, size_t* PushPlac
         return LIST_VERIF(List, Err);
     }
 
-    assert(GetTail(List));
 
     InsertAfter(List, GetTail(List), PushElem, PushPlace);
 
@@ -230,8 +227,6 @@ ListErrorType PushFront(List_t* List, const ListElem_t PushElem, size_t* PushPla
         return LIST_VERIF(List, Err);
     }
 
-    assert(GetHead(List));
-
     InsertBefore(List, GetHead(List), PushElem, PushPlace);
 
     return LIST_VERIF(List, Err);
@@ -252,8 +247,6 @@ ListErrorType PopBack(List_t* List, ListElem_t* PopElem)
         return LIST_VERIF(List, Err);
     }
 
-    assert(GetTail(List));
-
     Erase(List, GetTail(List), PopElem);
 
     return LIST_VERIF(List, Err);
@@ -273,8 +266,6 @@ ListErrorType PopFront(List_t* List, ListElem_t* PopElem)
         Err.ListUnderFlow = 1;
         return LIST_VERIF(List, Err);
     }
-
-    assert(GetHead(List));
 
     Erase(List, GetHead(List), PopElem);
 
@@ -606,8 +597,9 @@ static void DotCreateNode(FILE* dotFile, const List_t* List, const size_t node_i
     fprintf(dotFile, "label  =\"index : %lu   ", node_i);
     fprintf(dotFile, "|elem: %d   ",       Elem);
     fprintf(dotFile, "|<f0> next: %lu  ",  Next);
-    fprintf(dotFile, "|<f1> prev: %lu\",", Prev); 
+    fprintf(dotFile, "|<f1> prev: %lu,\"", Prev); 
     fprintf(dotFile, "color = \"#008080\"];\n");
+
     return;
 }
 

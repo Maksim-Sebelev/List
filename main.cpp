@@ -23,14 +23,14 @@ int main()
     LIST_ASSERT(PopFront(&List,          &EraseElem));
     LIST_ASSERT(Erase   (&List, RefElem, &EraseElem));
 
-
-    size_t Head = GetHead(&List);   // begin of list
-    size_t Tail = GetTail(&List);   // end   of list
-
+    size_t Head = GetHead(&List); // begin of list
     LIST_ASSERT(InsertBefore(&List, Head, InsertElem, &InsertPlace));  // <=> LIST_ASSERT(PushFront(&List, InsertElem, &InsertPlace));
+
+    size_t Tail = GetTail(&List); // end   of list
     LIST_ASSERT(InsertAfter (&List, Tail, InsertElem, &InsertPlace));  // <=> LIST_ASSERT(PushBack (&List, InsertElem, &InsertPlace));
-    LIST_ASSERT(Erase       (&List, Head, &EraseElem));                // <=> LIST_ASSERT(PopFront (&List, InsertElem, &InsertPlace));
-    LIST_ASSERT(Erase       (&List, Tail, &EraseElem));                // <=> LIST_ASSERT(PopBack  (&List, InsertElem, &InsertPlace));
+    
+    LIST_ASSERT(Erase       (&List, GetHead(&List), &EraseElem));      // <=> LIST_ASSERT(PopFront (&List, InsertElem, &InsertPlace));
+    LIST_ASSERT(Erase       (&List, GetTail(&List), &EraseElem));      // <=> LIST_ASSERT(PopBack  (&List, InsertElem, &InsertPlace));
 
 
     CONSOLE_DUMP(List);
@@ -39,6 +39,7 @@ int main()
     
 
     LIST_ASSERT(ListDtor(&List));
+    printf("list size = %lu\n", List.Size);
 
     return 0;
 }
