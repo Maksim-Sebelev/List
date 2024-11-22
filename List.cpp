@@ -563,6 +563,7 @@ static void GraphicDumpHelper(const List_t* List, const char* File, const int Li
     // DotCreatePrevEdges(dotFile, List);
     DotCreateRestList(dotFile, List);
     DotEnd(dotFile);
+
     fclose(dotFile);
     dotFile = nullptr;
 
@@ -594,14 +595,18 @@ static void DotCreateNode(FILE* dotFile, const List_t* List, const size_t node_i
     assert(dotFile);
     assert(List);
 
-    DataInfo Data_i = List->Data[node_i];
+    DataInfo   Data_i = List->Data[node_i];
+
+    ListElem_t Elem   = Data_i.Elem;
+    size_t     Next   = Data_i.Next;
+    size_t     Prev   = Data_i.Prev;
 
     fprintf(dotFile, "node%lu", node_i);
-    fprintf(dotFile, "[shape=record, style=filled, fillcolor=\"#3155b\"");
+    fprintf(dotFile, "[shape=record, style=filled, fillcolor=\"lightblue\"");
     fprintf(dotFile, "label  =\"index : %lu   ", node_i);
-    fprintf(dotFile, "|elem: %d   ",       Data_i.Elem);
-    fprintf(dotFile, "|<f0> next: %lu  ",  Data_i.Next);
-    fprintf(dotFile, "|<f1> prev: %lu\",", Data_i.Prev); 
+    fprintf(dotFile, "|elem: %d   ",       Elem);
+    fprintf(dotFile, "|<f0> next: %lu  ",  Next);
+    fprintf(dotFile, "|<f1> prev: %lu\",", Prev); 
     fprintf(dotFile, "color = \"#008080\"];\n");
     return;
 }
@@ -628,7 +633,7 @@ static void DotCreateNextEdges(FILE* dotFile, const List_t* List)
     assert(dotFile);
     assert(List);
 
-    fprintf(dotFile, "edge[color=\"cyan\", fontsize=12, constraint=false];\n");
+    fprintf(dotFile, "edge[color=\"red\", fontsize=12, constraint=false];\n");
 
     for (size_t node_i = 0; node_i < GetCapacity(List); node_i++)
     {
@@ -680,11 +685,11 @@ static void DotCreateRestList(FILE* dotFile, const List_t* List)
     assert(List);
     
     fprintf(dotFile, "node[shape = octagon, style = \"filled\", fillcolor = \"lightgray\"];\n");
-    fprintf(dotFile, "edge[color = \"red\"];\n");
+    fprintf(dotFile, "edge[color = \"cyan\"];\n");
     fprintf(dotFile, "head->node%zu;\n", GetHead(List));
     fprintf(dotFile, "tail->node%zu;\n", GetTail(List));
     fprintf(dotFile, "free->node%zu;\n", GetFree(List));
-    fprintf(dotFile, "nodeInfo[shape = Mrecord, style = filled, fillcolor=\"#19b2e6\",");
+    fprintf(dotFile, "nodeInfo[shape = Mrecord, style = filled, fillcolor=\"#70443b\",");
     fprintf(dotFile, "label=\"capacity: %zu ", GetCapacity(List));
     fprintf(dotFile, "| size : %zu\"];\n",     GetDataSize(List));   
     return;
@@ -697,9 +702,9 @@ static void DotCreateDumpPlace(FILE* dotFile, const char* File, const int Line, 
     assert(dotFile);
 
     fprintf(dotFile, "place");
-    fprintf(dotFile, "[shape=record, style=filled, fillcolor=\"#3155b\"");
-    fprintf(dotFile, "label  =\"");
-    fprintf(dotFile, "file: %s   ",       File);
+    fprintf(dotFile, "[shape=Mrecord, style=filled, fillcolor=\"#70443b\"");
+    fprintf(dotFile, "label  =\"Dump place:");
+    fprintf(dotFile, "| file: %s   ",       File);
     fprintf(dotFile, "|<f0> line: %d  ",  Line);
     fprintf(dotFile, "|<f1> func: %s\",", Func); 
     fprintf(dotFile, "color = \"#008080\"];\n"); 
