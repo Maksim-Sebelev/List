@@ -519,19 +519,36 @@ void ListAssertPrint(ListErrorType* Err, const char* File, const int Line, const
 
 void GraphicDump(const List_t* List, const char* File, const int Line, const char* Func)
 {
+    assert(List);
+    assert(File);
+    assert(Func);
+
+    if (system("mkdir -p dot/") != 0 ||
+        system("mkdir -p dot/dot/") != 0 ||
+        system("mkdir -p dot/img") != 0)
+    {
+        COLOR_PRINT(RED, "failed create dot dir\n");
+        exit(EXIT_FAILURE);
+    }
+
     static size_t ImgQuant = 0;
 
     static const size_t MaxFileNameLen = 128;
     char outFile[MaxFileNameLen] = {};
-    sprintf(outFile, "out%lu.png", ImgQuant);
+    sprintf(outFile, "dot/img/out%lu.png", ImgQuant);
     ImgQuant++;
 
     static const size_t MaxCommandLen = 256;
     char command[MaxCommandLen] = {};
-    sprintf(command, "dot -Tpng List.dot > %s", outFile);
+    sprintf(command, "dot -Tpng dot/dot/list.dot > %s", outFile);
 
     GraphicDumpHelper(List, File, Line, Func);
-    system(command);
+    
+    if (system(command) != 0)
+    {
+        COLOR_PRINT(RED, "failed create imf from dot\n");
+        exit(EXIT_FAILURE);
+    }
 
     return;
 }
@@ -542,7 +559,7 @@ static void GraphicDumpHelper(const List_t* List, const char* File, const int Li
 {
     assert(List);
 
-    static const char* dotFileName = "List.dot";
+    static const char* dotFileName = "dot/dot/list.dot";
     FILE* dotFile = fopen(dotFileName, "wb");
     assert(dotFile);
 

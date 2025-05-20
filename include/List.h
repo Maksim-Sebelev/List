@@ -65,26 +65,26 @@ void          GraphicDump      (const List_t* List, const char* File, const int 
 void          ConsoleDump      (const List_t* List, const char* File, int Line, const char* Func);
 
 
-#define COMPILER_RETURN_IF_ERR(Err) do   \
-{                                         \
-    CompilerErrorType ErrCopy = Err;       \
-    if (ErrCopy.IsFatalError == 1)          \
-    {                                        \
-        return ErrCopy;                       \
-    }                                          \
-} while (0)                                     \
+#define COMPILER_RETURN_IF_ERR(Err) do \
+{                                       \
+    CompilerErrorType ErrCopy = Err;     \
+    if (ErrCopy.IsFatalError == 1)        \
+    {                                      \
+        return ErrCopy;                     \
+    }                                        \
+} while (0)                                   \
 
 
-#define LIST_ASSERT(Err) do                                      \
-{                                                                 \
-    ListErrorType ErrCopy = Err;                                   \
-    if (ErrCopy.IsFatalError == 1)                                  \
-    {                                                                \
-        ListAssertPrint(&ErrCopy, __FILE__, __LINE__, __func__);      \
-        COLOR_PRINT(CYAN, "abort() in 3, 2, 1...");                    \
-        abort();                                                        \
-    }                                                                    \
-} while (0)                                                               \
+#define LIST_ASSERT(Err) do                                  \
+{                                                             \
+    ListErrorType ErrCopy = Err;                               \
+    if (ErrCopy.IsFatalError == 1)                              \
+    {                                                            \
+        ListAssertPrint(&ErrCopy, __FILE__, __LINE__, __func__);  \
+        COLOR_PRINT(CYAN, "abort() in 3, 2, 1...");                \
+        abort();                                                    \
+    }                                                                \
+} while (0)                                                           \
 
     
 #define LIST_VERIF(ListPtr, Err) Verif(ListPtr, &Err, __FILE__, __LINE__, __func__)
