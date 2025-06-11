@@ -523,9 +523,9 @@ void GraphicDump(const List_t* List, const char* File, const int Line, const cha
     assert(File);
     assert(Func);
 
-    if (system("mkdir -p dot/") != 0 ||
+    if (system("mkdir -p dot/")     != 0 ||
         system("mkdir -p dot/dot/") != 0 ||
-        system("mkdir -p dot/img") != 0)
+        system("mkdir -p dot/img")  != 0)
     {
         COLOR_PRINT(RED, "failed create dot dir\n");
         exit(EXIT_FAILURE);

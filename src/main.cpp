@@ -7,12 +7,10 @@ int main()
     size_t Capacity = 16;
     LIST_ASSERT(ListCtor(&List, Capacity));
 
-
     ListElem_t InsertElem  = 10;
     ListElem_t EraseElem   = 0;
     size_t     InsertPlace = 0;
     size_t     RefElem     = 2;
-
 
     LIST_ASSERT(PushBack    (&List,          InsertElem, &InsertPlace));
     LIST_ASSERT(PushBack    (&List,          InsertElem, &InsertPlace));
@@ -44,12 +42,10 @@ int main()
     LIST_ASSERT(Erase        (&List, GetHead(&List), &EraseElem));      // <=> LIST_ASSERT(PopFront (&List, InsertElem, &InsertPlace));
     LIST_ASSERT(Erase        (&List, GetTail(&List), &EraseElem));      // <=> LIST_ASSERT(PopBack  (&List, InsertElem, &InsertPlace));
 
-
     CONSOLE_DUMP(List);
     GRAPHIC_DUMP(List);
     PrintList(&List);
     
-
     LIST_ASSERT(ListDtor(&List));
     printf("list size = %lu\n", List.Size);
 
