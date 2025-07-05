@@ -1,0 +1,212 @@
+.
+├── bin
+│   ├── common
+│   │   └── src
+│   │       └── lib
+│   │           ├── lib.d
+│   │           ├── lib.o
+│   │           └── logger
+│   │               ├── log.d
+│   │               └── log.o
+│   ├── list
+│   │   └── src
+│   │       └── list
+│   │           ├── err_parse
+│   │           │   ├── err_parse.d
+│   │           │   └── err_parse.o
+│   │           ├── list.d
+│   │           └── list.o
+│   ├── main.d
+│   └── main.o
+├── build
+│   └── list
+├── dot
+│   ├── dot
+│   │   └── list.dot
+│   └── img
+│       └── out0.png
+├── .git
+│   ├── branches
+│   ├── COMMIT_EDITMSG
+│   ├── config
+│   ├── description
+│   ├── HEAD
+│   ├── hooks
+│   │   ├── applypatch-msg.sample
+│   │   ├── commit-msg.sample
+│   │   ├── fsmonitor-watchman.sample
+│   │   ├── post-update.sample
+│   │   ├── pre-applypatch.sample
+│   │   ├── pre-commit.sample
+│   │   ├── pre-merge-commit.sample
+│   │   ├── prepare-commit-msg.sample
+│   │   ├── pre-push.sample
+│   │   ├── pre-rebase.sample
+│   │   ├── pre-receive.sample
+│   │   ├── push-to-checkout.sample
+│   │   ├── sendemail-validate.sample
+│   │   └── update.sample
+│   ├── index
+│   ├── info
+│   │   └── exclude
+│   ├── logs
+│   │   ├── HEAD
+│   │   └── refs
+│   │       ├── heads
+│   │       │   └── main
+│   │       └── remotes
+│   │           └── origin
+│   │               ├── HEAD
+│   │               └── main
+│   ├── objects
+│   │   ├── 09
+│   │   │   └── 8d300b7d1f1682b5b0ed2628c18017fce1a393
+│   │   ├── 0a
+│   │   │   └── 8dac45959c8391934e3cead9be02726aaf580e
+│   │   ├── 0b
+│   │   │   └── 3d1dde138339d7b5a57139bb0abb963b244229
+│   │   ├── 0c
+│   │   │   └── dff5f5ff769e2b53e8cccd353c243c4c11a6b9
+│   │   ├── 1c
+│   │   │   └── c43f3253553755c6443061add6978b8dca4727
+│   │   ├── 1d
+│   │   │   └── 0ddcabc87c9948d1cca8f06ebd205ba723dd82
+│   │   ├── 26
+│   │   │   └── 94aabc7cd2870161458e2fed0acec4a2a5378f
+│   │   ├── 28
+│   │   │   └── 2d6b732a3bbffaa31d08a3ef1be5d302e85bd4
+│   │   ├── 2b
+│   │   │   └── 5dda92fbffbdf5839f219ecaebdfad8456fa22
+│   │   ├── 30
+│   │   │   └── 0e7596002cac01b9c898ad4b269ad47dc6e2f9
+│   │   ├── 35
+│   │   │   ├── 3e4fdeaa0998a9bb751bc8c1f0b404280cf0da
+│   │   │   └── 932a3b31612e50e7dab380304624085d205150
+│   │   ├── 3a
+│   │   │   └── c03a7a2db8cb34184e752805a3c38494a04edb
+│   │   ├── 43
+│   │   │   └── f3c76755c03717e0377530c93c9b6659f34e61
+│   │   ├── 4b
+│   │   │   └── c6137299e4358eb98510450c62db5d6eb894c1
+│   │   ├── 4f
+│   │   │   └── b23b0597c6646eab50c862f073619d4e76cde1
+│   │   ├── 53
+│   │   │   └── 7e54644fb00b9121a08b059edc91abe9e2b49c
+│   │   ├── 5a
+│   │   │   └── 58c8dbd0dfc9b7f8006cdb8eb01c021df319d4
+│   │   ├── 5d
+│   │   │   └── cc374daa15039912f7c31489b8b6c13fd83169
+│   │   ├── 5e
+│   │   │   └── ee0780f27fd89ef5fe0fb0c9ff96cff0325a05
+│   │   ├── 65
+│   │   │   └── 2268552b1cb487b467d8faf56e81876fcbe047
+│   │   ├── 70
+│   │   │   ├── 2137ee20c911d7afeb462e69e62c4051c35eeb
+│   │   │   └── 269f773d7c7ea206ebe6d8391aa85fd7460550
+│   │   ├── 79
+│   │   │   └── b67f50fd5b3115d98cdfefd421d593bffcaf3b
+│   │   ├── 7e
+│   │   │   └── 6fd5f8f2802ab7ac3c789b60975895c1aceec4
+│   │   ├── 89
+│   │   │   └── 446ea8bb888ec1ab159dd2a348a0191c1f934a
+│   │   ├── 9b
+│   │   │   └── f3576b39f9451108e03d186a02b24f45157516
+│   │   ├── a6
+│   │   │   └── 25f3e036e3a1660c4a75f6771fb05cfad78c50
+│   │   ├── aa
+│   │   │   └── 54e1458c315ce643e74a5292764a0f3ae96061
+│   │   ├── b1
+│   │   │   └── db9c908cd4992b58fe074122685faabd4a90b3
+│   │   ├── b2
+│   │   │   └── 6c7c8838108dbc29325a2f3a8eb41847e7634d
+│   │   ├── b5
+│   │   │   └── 210692c5768934a89b13b9deeb18267bc8b8f3
+│   │   ├── b9
+│   │   │   └── 0801e4d58d38ab4967ed5119ea34bde24e4949
+│   │   ├── ce
+│   │   │   └── 62a61a00a2017545cc597316b30b8f12f61e6c
+│   │   ├── cf
+│   │   │   └── be6e2ee35bca4b2d1516e8c1e5f20a6b020cc6
+│   │   ├── d0
+│   │   │   └── 90d1ed3ae58728e0a07390647f2f95f8c71758
+│   │   ├── d8
+│   │   │   └── 7f9121874082ab7d0c338eca7d3f847d687fe6
+│   │   ├── d9
+│   │   │   └── fad1b0c4ecba50d2804bfb3c8b57e00f35544a
+│   │   ├── e7
+│   │   │   ├── 728cfb94a36d6ea9d598fa9fae0f1745a35f72
+│   │   │   └── b1901508cdb397f5a629002e1b7bc3cc2d2755
+│   │   ├── e8
+│   │   │   └── 515f4315c01e4f0acf7ac0849a7cdc073b2063
+│   │   ├── fd
+│   │   │   └── 8b3af0eb8c374059af6d22a5eb86cbf767ac97
+│   │   ├── ff
+│   │   │   └── cdf2fc2c5d5ddf4b76de6eecd78ced38d36b33
+│   │   ├── info
+│   │   └── pack
+│   │       ├── pack-161f482fae42846e9fba9d9b275108e0c1b0b595.idx
+│   │       ├── pack-161f482fae42846e9fba9d9b275108e0c1b0b595.pack
+│   │       └── pack-161f482fae42846e9fba9d9b275108e0c1b0b595.rev
+│   ├── packed-refs
+│   └── refs
+│       ├── heads
+│       │   └── main
+│       ├── remotes
+│       │   └── origin
+│       │       ├── HEAD
+│       │       └── main
+│       └── tags
+├── .gitignore
+├── project_struct
+│   ├── all_project_struct.txt
+│   ├── project_struct.txt
+│   └── without_gitignore_project_struct.txt
+├── Src
+│   ├── common
+│   │   ├── include
+│   │   │   └── lib
+│   │   │       ├── lib.hpp
+│   │   │       └── logger
+│   │   │           └── log.hpp
+│   │   └── src
+│   │       └── lib
+│   │           ├── files
+│   │           ├── lib.cpp
+│   │           └── logger
+│   │               ├── backgrounds
+│   │               │   ├── anime_tyan_1.webp
+│   │               │   ├── anime_tyan_2.webp
+│   │               │   ├── anime_tyan_3.png
+│   │               │   └── anime_tyan_main.jpg
+│   │               └── log.cpp
+│   ├── list
+│   │   ├── include
+│   │   │   └── list
+│   │   │       ├── err_parse
+│   │   │       │   └── err_parse.hpp
+│   │   │       ├── list_dump
+│   │   │       │   ├── list_gpraphic_dump.hpp
+│   │   │       │   └── list_log_dump.hpp
+│   │   │       └── list.hpp
+│   │   └── src
+│   │       └── list
+│   │           ├── err_parse
+│   │           │   └── err_parse.cpp
+│   │           ├── list.cpp
+│   │           └── list_dump
+│   │               ├── list_graphic_dump.cpp
+│   │               └── list_log_dump.cpp
+│   ├── main.cpp
+│   └── Makefile
+├── .vscode
+│   ├── c_cpp_properties.json
+│   ├── launch.json
+│   └── settings.json
+└── zsh
+    ├── cmake.zsh
+    ├── commit.zsh
+    ├── copy.zsh
+    ├── iwyu.zsh
+    └── struct.zsh
+
+93 directories, 117 files

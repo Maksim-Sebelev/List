@@ -1,0 +1,50 @@
+.
+├── project_struct
+│   ├── all_project_struct.txt
+│   ├── project_struct.txt
+│   └── without_gitignore_project_struct.txt
+├── Src
+│   ├── common
+│   │   ├── include
+│   │   │   └── lib
+│   │   │       ├── lib.hpp
+│   │   │       └── logger
+│   │   │           └── log.hpp
+│   │   └── src
+│   │       └── lib
+│   │           ├── files
+│   │           ├── lib.cpp
+│   │           └── logger
+│   │               ├── backgrounds
+│   │               │   ├── anime_tyan_1.webp
+│   │               │   ├── anime_tyan_2.webp
+│   │               │   ├── anime_tyan_3.png
+│   │               │   └── anime_tyan_main.jpg
+│   │               └── log.cpp
+│   ├── list
+│   │   ├── include
+│   │   │   └── list
+│   │   │       ├── err_parse
+│   │   │       │   └── err_parse.hpp
+│   │   │       ├── list_dump
+│   │   │       │   ├── list_gpraphic_dump.hpp
+│   │   │       │   └── list_log_dump.hpp
+│   │   │       └── list.hpp
+│   │   └── src
+│   │       └── list
+│   │           ├── err_parse
+│   │           │   └── err_parse.cpp
+│   │           ├── list.cpp
+│   │           └── list_dump
+│   │               ├── list_graphic_dump.cpp
+│   │               └── list_log_dump.cpp
+│   ├── main.cpp
+│   └── Makefile
+└── zsh
+    ├── cmake.zsh
+    ├── commit.zsh
+    ├── copy.zsh
+    ├── iwyu.zsh
+    └── struct.zsh
+
+22 directories, 26 files
