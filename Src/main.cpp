@@ -5,9 +5,17 @@ int main()
 {
     List_t list = {};
 
-    LIST_ASSERT(&list, ListCtor(&list, 19));
+
+    ListError_t err = ListCtor(&list, 19);
+
+    TRANSFER_ERROR(&err);
+
+    TRANSFER_ERROR(&err);
 
 
+    LIST_ASSERT(&list, err);
+
+    LIST_ASSERT(&list, ListDtor(&list));
 
     return 0;
 }

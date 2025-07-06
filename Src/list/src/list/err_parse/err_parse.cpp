@@ -23,7 +23,9 @@ void ListAssert(List_t* list, ListError_t err, const char* file, unsigned int li
     assert(file);
     assert(func);
 
-    if (err.status == ListStatus::OK) return;
+    ListStatus status = err.status;
+
+    if (status == ListStatus::OK) return;
 
     CodePlace assert_place = CodePlaceCtor(file, line, func);
 
@@ -31,8 +33,10 @@ void ListAssert(List_t* list, ListError_t err, const char* file, unsigned int li
 
     WayToErrDtor(err.err_way);
 
-    if (list->data)
+    if (list->data) // if need to free allocated memory
         ListDtor(list);
+
+    if (status == ListStatus::WARN) return;
 
     exit(EXIT_FAILURE);
 
@@ -144,8 +148,6 @@ static void ListAssertPrint(const ListError_t* err, const CodePlace* assert_plac
 
     PrintFullWayToErrWithAssert(assert_place, way_to_err);
 
-    COLOR_PRINT(CYAN, "exit in 3, 2, 1...");
-
     return;
 }
 
@@ -178,9 +180,9 @@ static void PrintError(const ListError_t* err)
         default:                     __builtin_unreachable__("undef error type");
     }
 
-    printf("\n");
     printf(RESET); // ger default console text settings
-
+    
+    printf("\n\n");
     return;
 }
 
@@ -199,9 +201,19 @@ static void PrintWarning(const ListError_t* err)
 
     switch (warn_type)
     {
-        case ListWarningType::NO_WARN: __builtin_unreachable__("try to print warning, when no warning");
-        default:                       __builtin_unreachable__("undef warning type");
+        case ListWarningType::FAILED_REALLOCATE_DATA_AFTER_INSTERT:
+            printf("Failed reallocate memory after insert.");
+            break;
+
+        case ListWarningType::FAILED_REALLOCATE_DATA_AFTER_ERASE:
+            printf("failed reallocate memory after erase.");
+            break;
+
+        case ListWarningType::NO_WARN: __builtin_unreachable__("try to print warning, when no warning"); break;
+        default:                       __builtin_unreachable__("undef warning type");                    break;
     }
+
+    printf("\nList will not change after this operation, for secure.\n\n");
 
     printf(RESET); // made console default settings
 

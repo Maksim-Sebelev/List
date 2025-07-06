@@ -4,3 +4,7 @@ bin/
 build/
 
 dot/
+
+project_struct/
+
+zsh/

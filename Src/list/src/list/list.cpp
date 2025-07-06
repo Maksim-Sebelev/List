@@ -46,13 +46,14 @@ ListError_t ListCtor(List_t* list, size_t capacity)
 
     list->capacity    = capacity + 1;
     list->size        = 0;
-    // list->data        = (ListElem*) calloc(capacity + 1, sizeof(ListElem));
+    list->data        = (ListElem*) calloc(capacity + 1, sizeof(ListElem));
 
     list->data = nullptr; //// !!!!!!!!!!
 
     if (!list->data)
     {
-        return GET_STATUS_ERR(ListErrorType::FAILED_ALLOCATE_MEMORY_IN_CTOR);
+        return GET_STATUS_WARN(ListWarningType::FAILED_REALLOCATE_DATA_AFTER_ERASE);
+        // return GET_STATUS_ERR(ListErrorType::FAILED_ALLOCATE_MEMORY_IN_CTOR);
     }
 
     list->data[GetTail(list)].prev = list->data[GetTail(list)].prev;
