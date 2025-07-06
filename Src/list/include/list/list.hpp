@@ -52,6 +52,8 @@ enum class ListWarningType
     NO_WARN = 0,
     FAILED_REALLOCATE_DATA_AFTER_INSTERT,
     FAILED_REALLOCATE_DATA_AFTER_ERASE,
+    ERASE_IN_EMPTY_LIST,
+    TO_BIG_CAPACITY,
 };
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -95,24 +97,36 @@ struct ListError_t
 
 ListError_t ListCtor         (List_t* List, size_t Capacity);
 ListError_t ListDtor         (List_t* List);
-ListError_t InsertAfter      (List_t* List, const size_t RefElem, const list_elem_t InsertElem, size_t* InsertPlace);
-ListError_t InsertBefore     (List_t* List, const size_t RefElem, const list_elem_t InsertElem, size_t* InsertPlace);
-ListError_t PushBack         (List_t* List, const list_elem_t PushElem,   size_t* PushPlace);
-ListError_t PushFront        (List_t* List, const list_elem_t PushElem, size_t* PushPlace);
-ListError_t Erase            (List_t* List, const size_t EraseElemPlace, list_elem_t* EraseELem);
-ListError_t PopBack          (List_t* List, list_elem_t* PopElem);
-ListError_t PopFront         (List_t* List, list_elem_t* PopElem);
+ListError_t ListInsertAfter  (List_t* List, const size_t RefElem, const list_elem_t InsertElem, size_t* InsertPlace);
+ListError_t ListInsertBefore (List_t* List, const size_t RefElem, const list_elem_t InsertElem, size_t* InsertPlace);
+ListError_t ListPushBack     (List_t* List, const list_elem_t PushElem, size_t* PushPlace);
+ListError_t ListPushFront    (List_t* List, const list_elem_t PushElem, size_t* PushPlace);
+ListError_t ListErase        (List_t* List, const size_t EraseElemPlace, list_elem_t* EraseELem);
+ListError_t ListPopBack      (List_t* List, list_elem_t* PopElem);
+ListError_t ListPopFront     (List_t* List, list_elem_t* PopElem);
 void        PrintList        (const List_t* List);
-size_t      GetHead          (const List_t* List);
-size_t      GetTail          (const List_t* List);
+
+
+
+list_elem_t GetDataElemValue (const List_t* list, size_t Data_i);
+size_t      GetTail          (const List_t* list);
+size_t      GetNextIndex     (const List_t* list, size_t NowIndex);
+size_t      GetPrevIndex     (const List_t* list, size_t NowIndex);
+size_t      GetHead          (const List_t* list);
+size_t      GetFree          (const List_t* list);
+size_t      GetCapacity      (const List_t* list);
+size_t      GetDataSize      (const List_t* list);
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void PrintList(const List_t* List);
 
 ListErrorType Verif            (List_t* List, ListErrorType* Err, const char* File, const int Line, const char* Func);
 void          ListAssertPrint  (ListErrorType* Err, const char* File, const int Line, const char* Func);
 
 void          GraphicDump      (const List_t* List, const char* File, const int Line, const char* Func);
 void          ConsoleDump      (const List_t* List, const char* File, int Line, const char* Func);
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 

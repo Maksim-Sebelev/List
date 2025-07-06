@@ -12,8 +12,8 @@ static void      ListAssertPrint            (const ListError_t* err, const CodeP
 static void      PrintErrorOrWarn           (const ListError_t* err);    // return true if status OK, else return false
 static void      PrintError                 (const ListError_t* err);
 static void      PrintWarning               (const ListError_t* err);
-static void      PrintWayToErr              (const WayToErr   * way_to_err);
-static void      PrintFullWayToErrWithAssert(const CodePlace  * assert_place, const WayToErr* way_to_err);
+static void      PrintWayToErr              (const WayToErr   * way_to_err, const ListStatus* status);
+static void      PrintFullWayToErrWithAssert(const CodePlace  * assert_place, const WayToErr* way_to_err, const ListStatus* status);
 
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -45,17 +45,20 @@ void ListAssert(List_t* list, ListError_t err, const char* file, unsigned int li
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void ErrTransfer(ListError_t* err, const char* file, unsigned int line, const char* func)
+ListError_t ErrTransfer(ListError_t* err, const char* file, unsigned int line, const char* func)
 {
     assert(err);
     assert(file);
     assert(func);
 
+    if (err->status == ListStatus::OK)
+        return {};
+
     CodePlace now_place = CodePlaceCtor(file, line, func);
 
     err->err_way = WayToErrCtor(err->err_way, &now_place); // update way to err;
 
-    return;
+    return *err;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -145,8 +148,9 @@ static void ListAssertPrint(const ListError_t* err, const CodePlace* assert_plac
     PrintErrorOrWarn(err);
 
     WayToErr* way_to_err = err->err_way;
+    ListStatus status = err->status; 
 
-    PrintFullWayToErrWithAssert(assert_place, way_to_err);
+    PrintFullWayToErrWithAssert(assert_place, way_to_err, &status);
 
     return;
 }
@@ -209,6 +213,14 @@ static void PrintWarning(const ListError_t* err)
             printf("failed reallocate memory after erase.");
             break;
 
+        case ListWarningType::ERASE_IN_EMPTY_LIST:
+            printf("try to erase in empty list.");
+            break;
+
+        case ListWarningType::TO_BIG_CAPACITY:
+            printf("you insert too many elements in your list. we can't insert one more element.");
+            break;
+
         case ListWarningType::NO_WARN: __builtin_unreachable__("try to print warning, when no warning"); break;
         default:                       __builtin_unreachable__("undef warning type");                    break;
     }
@@ -222,12 +234,19 @@ static void PrintWarning(const ListError_t* err)
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void PrintWayToErr(const WayToErr* way_to_err)
+static void PrintWayToErr(const WayToErr* way_to_err, const ListStatus* status)
 {
+    assert(status);
+
     if (!way_to_err)
     {
-        COLOR_PRINT(RED, " < error datected here.\n");
-        return;
+        switch (*status)
+        {
+            case ListStatus::ERR:  COLOR_PRINT(RED   , " < error detected here.\n"  ); return;
+            case ListStatus::WARN: COLOR_PRINT(YELLOW, " < warning detected here.\n"); return;
+            default: __builtin_unreachable__("here parse only err situation");
+        }
+        __builtin_unreachable__("wtf");
     }
 
     printf("\n");
@@ -235,17 +254,29 @@ static void PrintWayToErr(const WayToErr* way_to_err)
 
     PrintStructPlace(&now_place);
 
-    return PrintWayToErr(way_to_err->previous_place);
+    return PrintWayToErr(way_to_err->previous_place, status);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void PrintFullWayToErrWithAssert(const CodePlace* assert_place, const WayToErr* way_to_err)
+static void PrintFullWayToErrWithAssert(const CodePlace* assert_place, const WayToErr* way_to_err, const ListStatus* status)
 {
     assert(assert_place);
+    assert(status);
 
-    PrintStructPlace(assert_place); COLOR_PRINT(RED, " < assert made here.");
-    PrintWayToErr   (way_to_err  ); printf("\n");
+    PrintStructPlace(assert_place);
+
+    switch (*status)
+    {
+        case ListStatus::ERR:  printf(RED   ); break;
+        case ListStatus::WARN: printf(YELLOW); break;
+        default: __builtin_unreachable__("we parse only err here");
+    }
+
+    printf(" < assert made here.");
+    printf(RESET);
+
+    PrintWayToErr   (way_to_err, status); printf("\n");
 
     return;
 }

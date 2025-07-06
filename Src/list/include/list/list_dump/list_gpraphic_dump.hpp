@@ -1,6 +1,11 @@
 #ifndef __LIST_GRAPHIC_DUMP_HPP__
 #define __LIST_GRAPHIC_DUMP_HPP__
 
+#include "lib/lib.hpp"
 
+struct List;
+
+void GraphicDump (const List_t* List, const char* File, const int Line, const char* Func);
+#define LIST_GRAPHIC_DUMP(list) GraphicDump(list, FLF)
 
 #endif // __LIST_DUMP_HPP__

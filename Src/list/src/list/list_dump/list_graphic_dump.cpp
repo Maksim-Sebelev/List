@@ -1,19 +1,34 @@
 #include <stdlib.h>
 #include <assert.h>
-#include "list/list.h"
+#include "list/list.hpp"
 #include "lib/lib.hpp"
+#include "lib/functions_for_files/files.hpp"
+
+
+static void GraphicDumpHelper(const List_t* list, const char* File, const int Line, const char* Func);
+static void DotBegin(FILE* dot_file);
+static void DotEnd(FILE* dot_file);
+static void DotCreateNotFreeNode(FILE* dot_file, const List_t* list, const size_t node_i);
+static void DotCreateFreeNode(FILE* dot_file, const List_t* list, const size_t node_i);
+static void DotCreateHeadNode(FILE* dot_file, const List_t* list);
+static void DotCreateAllNodes(FILE* dot_file, const List_t* list);
+static void DotCreateNextEdges(FILE* dot_file, const List_t* list);
+static void DotCreatePrevEdges(FILE* dot_file, const List_t* list);
+static void DotCreateEdges(FILE* dot_file, const List_t* list);
+static void DotCreateRestList(FILE* dot_file, const List_t* list);
+static void DotCreateDumpPlace(FILE* dot_file, const char* File, const int Line, const char* Func);
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void GraphicDump(const List_t* List, const char* File, const int Line, const char* Func)
+void GraphicDump(const List_t* list, const char* File, const int Line, const char* Func)
 {
-    assert(List);
+    assert(list);
     assert(File);
     assert(Func);
 
-    if (system("mkdir -p dot/")     != 0 ||
-        system("mkdir -p dot/dot/") != 0 ||
-        system("mkdir -p dot/img")  != 0)
+    if (system("mkdir -p ../dot/")     != 0 ||
+        system("mkdir -p ../dot/dot/") != 0 ||
+        system("mkdir -p ../dot/img")  != 0)
     {
         EXIT(EXIT_FAILURE, "failed creat directory for graphic dump.");
     }
@@ -22,14 +37,14 @@ void GraphicDump(const List_t* List, const char* File, const int Line, const cha
 
     static const size_t MaxFileNameLen = 128;
     char outFile[MaxFileNameLen] = {};
-    sprintf(outFile, "dot/img/out%lu.png", ImgQuant);
+    sprintf(outFile, "../dot/img/out%lu.png", ImgQuant);
     ImgQuant++;
 
     static const size_t MaxCommandLen = 256;
     char command[MaxCommandLen] = {};
-    sprintf(command, "dot -Tpng dot/dot/list.dot > %s", outFile);
+    sprintf(command, "dot -Tpng ../dot/dot/list.dot > %s", outFile);
 
-    GraphicDumpHelper(List, File, Line, Func);
+    GraphicDumpHelper(list, File, Line, Func);
     
     if (system(command) != 0)
         EXIT(EXIT_FAILURE, "failed made command\n"WHITE"'%s'", command);
@@ -39,148 +54,144 @@ void GraphicDump(const List_t* List, const char* File, const int Line, const cha
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void GraphicDumpHelper(const List_t* List, const char* File, const int Line, const char* Func)
+static void GraphicDumpHelper(const List_t* list, const char* File, const int Line, const char* Func)
 {
-    assert(List);
+    assert(list);
 
-    static const char* dotFileName = "dot/dot/list.dot";
-    FILE* dotFile = fopen(dotFileName, "wb");
-    assert(dotFile);
+    static const char* dotFileName = "../dot/dot/list.dot";
+    FILE* dot_file = SafeFopen(dotFileName, "wb");
+    assert(dot_file);
 
-    DotBegin(dotFile);
-    DotCreateDumpPlace(dotFile, File, Line, Func);
+    DotBegin          (dot_file);
+    DotCreateDumpPlace(dot_file, File, Line, Func);
+    DotCreateAllNodes (dot_file, list);
+    DotCreateEdges    (dot_file, list);
+    DotCreateNextEdges(dot_file, list);
+    DotCreateRestList (dot_file, list);
+    DotEnd            (dot_file);
 
-    DotCreateAllNodes(dotFile, List);
-    DotCreateEdges(dotFile, List);
-    DotCreateNextEdges(dotFile, List);
-
-    DotCreateRestList(dotFile, List);
-    
-    DotEnd(dotFile);
-
-    fclose(dotFile);
-    dotFile = nullptr;
+    SafeFclose(dot_file);
 
     return;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void DotBegin(FILE* dotFile)
+static void DotBegin(FILE* dot_file)
 {
-    assert(dotFile);
-    fprintf(dotFile, "digraph G{\nrankdir=LR;\ngraph [bgcolor=\"#000000\"];\n");
+    assert(dot_file);
+    fprintf(dot_file, "digraph G{\nrankdir=LR;\ngraph [bgcolor=\"#000000\"];\n");
     return;
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void DotEnd(FILE* dotFile)
+static void DotEnd(FILE* dot_file)
 {
-    assert(dotFile);
-    fprintf(dotFile, "}\n\n");
+    assert(dot_file);
+    fprintf(dot_file, "}\n\n");
     return;
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void DotCreateNotFreeNode(FILE* dotFile, const List_t* List, const size_t node_i)
+static void DotCreateNotFreeNode(FILE* dot_file, const List_t* list, const size_t node_i)
 {
-    assert(dotFile);
-    assert(List);
+    assert(dot_file);
+    assert(list);
 
-    ListElem   list_elem = List->data[node_i];
+    ListElem   list_elem = list->data[node_i];
 
     list_elem_t value  = list_elem.value;
     size_t      next   = list_elem.next ;
     size_t      prev   = list_elem.prev ;
 
-    fprintf(dotFile, "node%lu", node_i);
-    fprintf(dotFile, "[shape=Mrecord, style=filled, fillcolor=\"#15a6bf\"");
-    fprintf(dotFile, "label =\"index : %lu ", node_i                      );
-    fprintf(dotFile, "| data: %d "          ,  value                      );
-    fprintf(dotFile, "| <f0> next: %lu "    ,  next                       );
-    fprintf(dotFile, "| <f1> prev: %lu \""  ,  prev                       ); 
-    fprintf(dotFile, "color = \"#008080\"];\n"                            );
+    fprintf(dot_file, "node%lu", node_i);
+    fprintf(dot_file, "[shape=Mrecord, style=filled, fillcolor=\"#15a6bf\"");
+    fprintf(dot_file, "label =\"index : %lu ", node_i                      );
+    fprintf(dot_file, "| data: %d "          ,  value                      );
+    fprintf(dot_file, "| <f0> next: %lu "    ,  next                       );
+    fprintf(dot_file, "| <f1> prev: %lu \""  ,  prev                       ); 
+    fprintf(dot_file, "color = \"#008080\"];\n"                            );
 
     return;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void DotCreateFreeNode(FILE* dotFile, const List_t* List, const size_t node_i)
+static void DotCreateFreeNode(FILE* dot_file, const List_t* list, const size_t node_i)
 {
-    assert(dotFile);
-    assert(List);
+    assert(dot_file);
+    assert(list);
 
-    ListElem   list_elem = List->data[node_i];
+    ListElem   list_elem = list->data[node_i];
+
+    list_elem_t value   = list_elem.value;
+    size_t      next    = list_elem.next;
+    size_t      prev    = list_elem.prev;
+
+    fprintf(dot_file, "node%lu", node_i);
+    fprintf(dot_file, "[shape=Mrecord, style=filled, fillcolor=\"#1775a5\"");
+    fprintf(dot_file, "label =\"index : %lu   ", node_i);
+    fprintf(dot_file, "| data: %d ",          value);
+    fprintf(dot_file, "| <f0> next: %lu ",    next);
+    fprintf(dot_file, "| <f1> prev: %lu\", ", prev); 
+    fprintf(dot_file, "color = \"#008080\"];\n");
+
+    return;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static void DotCreateHeadNode(FILE* dot_file, const List_t* list)
+{
+    assert(dot_file);
+    assert(list);
+
+    ListElem   list_elem = list->data[0];
 
     list_elem_t value   = list_elem.value;
     size_t     next   = list_elem.next;
     size_t     prev   = list_elem.prev;
 
-    fprintf(dotFile, "node%lu", node_i);
-    fprintf(dotFile, "[shape=Mrecord, style=filled, fillcolor=\"#1775a5\"");
-    fprintf(dotFile, "label =\"index : %lu   ", node_i);
-    fprintf(dotFile, "| data: %d ",          value);
-    fprintf(dotFile, "| <f0> next: %lu ",    next);
-    fprintf(dotFile, "| <f1> prev: %lu\", ", prev); 
-    fprintf(dotFile, "color = \"#008080\"];\n");
+    fprintf(dot_file, "node0");
+    fprintf(dot_file, "[shape=Mrecord, style=filled, fillcolor=\"#17a53b\"");
+    fprintf(dot_file, "label =\"index : 0 ");
+    fprintf(dot_file, "| data: %d ",          value);
+    fprintf(dot_file, "| <f0> next: %lu ",    next);
+    fprintf(dot_file, "| <f1> prev: %lu\", ", prev); 
+    fprintf(dot_file, "color = \"#008080\"];\n");
 
     return;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void DotCreateHeadNode(FILE* dotFile, const List_t* List)
+static void DotCreateAllNodes(FILE* dot_file, const List_t* list)
 {
-    assert(dotFile);
-    assert(List);
+    assert(dot_file);
+    assert(list);
 
-    ListElem   list_elem = List->data[0];
+    DotCreateHeadNode(dot_file, list);
 
-    list_elem_t value   = list_elem.value;
-    size_t     next   = list_elem.next;
-    size_t     prev   = list_elem.prev;
+    const size_t size = GetDataSize(list);
 
-    fprintf(dotFile, "node0");
-    fprintf(dotFile, "[shape=Mrecord, style=filled, fillcolor=\"#17a53b\"");
-    fprintf(dotFile, "label =\"index : 0 ");
-    fprintf(dotFile, "| data: %d ",          value);
-    fprintf(dotFile, "| <f0> next: %lu ",    next);
-    fprintf(dotFile, "| <f1> prev: %lu\", ", prev); 
-    fprintf(dotFile, "color = \"#008080\"];\n");
-
-    return;
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static void DotCreateAllNodes(FILE* dotFile, const List_t* List)
-{
-    assert(dotFile);
-    assert(List);
-
-    DotCreateHeadNode(dotFile, List);
-
-    const size_t size = GetDataSize(List);
-
-    size_t now_i = GetHead(List);
+    size_t now_i = GetHead(list);
 
     for (size_t i = 0; i < size; i++)
     {
-        DotCreateNotFreeNode(dotFile, List, now_i);
-        now_i = GetNextIndex(List, now_i);
+        DotCreateNotFreeNode(dot_file, list, now_i);
+        now_i = GetNextIndex(list, now_i);
     }
 
 
-    size_t freeSize = GetCapacity(List) - size;
-    now_i = GetFree(List);
+    size_t freeSize = GetCapacity(list) - size;
+    now_i = GetFree(list);
 
     for (size_t i = 0; i < freeSize; i++)
     {
-        DotCreateFreeNode(dotFile, List, now_i);
-        now_i = GetNextIndex(List, now_i);
+        DotCreateFreeNode(dot_file, list, now_i);
+        now_i = GetNextIndex(list, now_i);
     }
 
     return;
@@ -188,36 +199,35 @@ static void DotCreateAllNodes(FILE* dotFile, const List_t* List)
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void DotCreateNextEdges(FILE* dotFile, const List_t* List)
+static void DotCreateNextEdges(FILE* dot_file, const List_t* list)
 {
-    assert(dotFile);
-    assert(List);
+    assert(dot_file);
+    assert(list);
 
-    fprintf(dotFile, "\nedge[color = \"#c91c14\", fontsize = 12, constraint=false];\n");
+    fprintf(dot_file, "\nedge[color = \"#c91c14\", fontsize = 12, constraint=false];\n");
 
-    size_t size  = List->size;
-    size_t now_i = GetHead(List);
+    size_t size  = list->size;
+    size_t now_i = GetHead(list);
 
     for (size_t i = 0; i < size + 1; i++)
     {
-        size_t next = GetNextIndex(List, now_i);
-        fprintf(dotFile, "node%lu:<f0>->node%lu:<f0>;\n", now_i, next);
+        size_t next = GetNextIndex(list, now_i);
+        fprintf(dot_file, "node%lu:<f0>->node%lu:<f0>;\n", now_i, next);
         now_i = next;
     }
 
 
 
-    fprintf(dotFile, "\nedge[color = \"#17a927\", fontsize = 12, constraint=false];\n");
+    fprintf(dot_file, "\nedge[color = \"#17a927\", fontsize = 12, constraint=false];\n");
     
-    size_t freeSize = List->capacity - size;
+    size_t freeSize = list->capacity - size;
 
-    COLOR_PRINT(VIOLET, "free size = %lu\n", freeSize);
-    now_i = List->Free;
+    now_i = list->free;
 
     for (size_t i = 0; i < freeSize - 1; i++)
     {
-        size_t next = GetNextIndex(List, now_i);
-        fprintf(dotFile, "node%lu:<f0>->node%lu:<f0>;\n", now_i, next);
+        size_t next = GetNextIndex(list, now_i);
+        fprintf(dot_file, "node%lu:<f0>->node%lu:<f0>;\n", now_i, next);
         now_i = next;
     }
 
@@ -227,16 +237,16 @@ static void DotCreateNextEdges(FILE* dotFile, const List_t* List)
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void DotCreatePrevEdges(FILE* dotFile, const List_t* List)
+static void DotCreatePrevEdges(FILE* dot_file, const List_t* list)
 {
-    assert(dotFile);
-    assert(List);
+    assert(dot_file);
+    assert(list);
 
-    fprintf(dotFile, "edge[color=\"red\", fontsize=12, constraint=false];\n");
+    fprintf(dot_file, "edge[color=\"red\", fontsize=12, constraint=false];\n");
 
-    for (size_t node_i = 0; node_i < GetCapacity(List); node_i++)
+    for (size_t node_i = 0; node_i < GetCapacity(list); node_i++)
     {
-        fprintf(dotFile, "node%lu->node%lu;\n", node_i, GetPrevIndex(List, node_i));
+        fprintf(dot_file, "node%lu->node%lu;\n", node_i, GetPrevIndex(list, node_i));
     }
 
     return;
@@ -244,15 +254,15 @@ static void DotCreatePrevEdges(FILE* dotFile, const List_t* List)
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void DotCreateEdges(FILE* dotFile, const List_t* List)
+static void DotCreateEdges(FILE* dot_file, const List_t* list)
 {
-    assert(dotFile);
-    assert(List);
+    assert(dot_file);
+    assert(list);
 
-    fprintf(dotFile, "node0");    
-    for (size_t node_i = 1; node_i < List->capacity; node_i++)
+    fprintf(dot_file, "node0");    
+    for (size_t node_i = 1; node_i < list->capacity; node_i++)
     {
-        fprintf(dotFile, "->node%zu", node_i);
+        fprintf(dot_file, "->node%zu", node_i);
     }
 
     return;
@@ -260,35 +270,37 @@ static void DotCreateEdges(FILE* dotFile, const List_t* List)
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void DotCreateRestList(FILE* dotFile, const List_t* List)
+static void DotCreateRestList(FILE* dot_file, const List_t* list)
 {
-    assert(dotFile);
-    assert(List);
+    assert(dot_file);
+    assert(list);
     
-    fprintf(dotFile, "node[shape = octagon, style = \"filled\", fillcolor = \"lightgray\"];\n");
-    fprintf(dotFile, "edge[color = \"cyan\"];\n");
-    fprintf(dotFile, "head->node%zu;\n", GetHead(List));
-    fprintf(dotFile, "tail->node%zu;\n", GetTail(List));
-    fprintf(dotFile, "free->node%zu;\n", GetFree(List));
-    fprintf(dotFile, "nodeInfo[shape = Mrecord, style = filled, fillcolor=\"#70443b\",");
-    fprintf(dotFile, "label=\"capacity: %zu ", GetCapacity(List));
-    fprintf(dotFile, "| size : %zu\"];\n",     GetDataSize(List));   
+    fprintf(dot_file, "node[shape = octagon, style = \"filled\", fillcolor = \"lightgray\"];\n");
+    fprintf(dot_file, "edge[color = \"cyan\"];\n");
+    fprintf(dot_file, "free->node%zu;\n", GetFree(list));
+    fprintf(dot_file, "edge[color = \"red\"];\n");
+    fprintf(dot_file, "head->node%zu;\n", GetHead(list));
+    fprintf(dot_file, "edge[color = \"white\"];\n");
+    fprintf(dot_file, "tail->node%zu;\n", GetTail(list));
+    fprintf(dot_file, "nodeInfo[shape = Mrecord, style = filled, fillcolor=\"#70443b\",");
+    fprintf(dot_file, "label=\"capacity: %zu ", GetCapacity(list));
+    fprintf(dot_file, "| size : %zu\"];\n",     GetDataSize(list));   
     return;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void DotCreateDumpPlace(FILE* dotFile, const char* File, const int Line, const char* Func)
+static void DotCreateDumpPlace(FILE* dot_file, const char* File, const int Line, const char* Func)
 {
-    assert(dotFile);
+    assert(dot_file);
 
-    fprintf(dotFile, "place");
-    fprintf(dotFile, "[shape=Mrecord, style=filled, fillcolor=\"#70443b\"");
-    fprintf(dotFile, "label  =\"Dump place:");
-    fprintf(dotFile, "| file: %s ",        File);
-    fprintf(dotFile, "| <f0> line: %d ",   Line);
-    fprintf(dotFile, "| <f1> func: %s\",", Func); 
-    fprintf(dotFile, "color = \"#000000\"];\n"); 
+    fprintf(dot_file, "place");
+    fprintf(dot_file, "[shape=Mrecord, style=filled, fillcolor=\"#70443b\"");
+    fprintf(dot_file, "label  =\"Dump place:");
+    fprintf(dot_file, "| file: %s ",        File);
+    fprintf(dot_file, "| <f0> line: %d ",   Line);
+    fprintf(dot_file, "| <f1> func: %s\",", Func); 
+    fprintf(dot_file, "color = \"#000000\"];\n"); 
     return;
 }
 

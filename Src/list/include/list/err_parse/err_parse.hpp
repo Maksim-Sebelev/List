@@ -9,11 +9,23 @@
 
 void        ListAssert            (List_t* list, ListError_t err, const char* file, unsigned int line, const char* func);
 
-void        ErrTransfer           (ListError_t* err         , const char* file, unsigned int line, const char* func);
+ListError_t ErrTransfer           (ListError_t* err         , const char* file, unsigned int line, const char* func);
 
 ListError_t   ListErrorStatusCtor (ListErrorType   err_type , const char* file, unsigned int line, const char* func);
 ListError_t ListWarningStatusCtor (ListWarningType warn_type, const char* file, unsigned int line, const char* func);
 ListError_t      ListOkStatusCtor ();
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#define LIST_CTOR(list, capacity)                        LIST_ASSERT(list, ListCtor        (list, capacity    ))
+#define LIST_DTOR(list)                                  LIST_ASSERT(list, ListDtor        (list              ))
+#define LIST_INSERT_AFTER( list, ref_elem, value, place) LIST_ASSERT(list, ListInsertAfter (list, ref_elem, value, place))
+#define LIST_INSERT_BEFORE(list, ref_elem, value, place) LIST_ASSERT(list, ListInsertBefore(list, ref_elem, value, place))
+#define LIST_ERASE(        list, place, value          ) LIST_ASSERT(list, ListErase       (list, place, value))
+#define LIST_PUSH_BACK(    list, value, place          ) LIST_ASSERT(list, ListPushBack    (list, value, place))
+#define LIST_PUSH_FRONT(   list, value, place          ) LIST_ASSERT(list, ListPushFront   (list, value, place))
+#define LIST_POP_BACK(     list, value                 ) LIST_ASSERT(list, ListPopBack     (list, value       ))
+#define LIST_POP_FRONT(    list, value                 ) LIST_ASSERT(list, ListPopFront    (list, value       ))
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -35,21 +47,21 @@ ListError_t      ListOkStatusCtor ();
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define RETURN_IF_ERR(err) do          \
-{                                       \
-    ListError_t err_copy = err;          \
-    if (err_copy.err == ListStus::ERR)    \
-        return TRANSFER_ERROR(&err_copy);  \
-} while(0)                                  \
+#define RETURN_IF_ERR(err) do             \
+{                                          \
+    ListError_t err_copy = err;             \
+    if (err_copy.status == ListStatus::ERR)  \
+        return TRANSFER_ERROR(&err_copy);     \
+} while(0)                                     \
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define RETURN_IF_ERR_OR_WARN(err) do  \
-{                                       \
-    ListError_t err_copy = err;          \
-    if (err_copy.err != ListStus::OK)     \
-        return TRANSFER_ERROR(&err_copy);  \
-} while(0)                                  \
+#define RETURN_IF_ERR_OR_WARN(err) do      \
+{                                           \
+    ListError_t err_copy = err;              \
+    if (err_copy.status != ListStatus::OK)    \
+        return TRANSFER_ERROR(&err_copy);      \
+} while(0)                                      \
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 

@@ -52,9 +52,10 @@ override CFLAGS += $(COMMONINC)
 CSRC =  main.cpp                         \
 		list/src/list/list.cpp           \
 		list/src/list/err_parse/err_parse.cpp \
+		list/src/list/list_dump/list_graphic_dump.cpp \
 		common/src/lib/lib.cpp           \
-		#list/src/list_dump/list_dump.cpp \
-		list/src/list_dump/list_.cpp     \
+		common/src/lib/functions_for_files/files.cpp \
+		#list/src/list_dump/list_.cpp     \
 
 ifeq ($(BUILD_TYPE), debug)
 	CSRC += common/src/lib/logger/log.cpp
@@ -90,7 +91,7 @@ makeCodeDir:
 	@mkdir -p $(BIN_DIR)
 endif
 
-run: all
+run: all clean_dot
 	make -f $(MAKEFILE_NAME) makeCodeDir
 	./$(EXECUTABLE_DIR)/$(EXECUTABLE) $(BIN_DIR)/$(BIN_FILE)
 
@@ -100,13 +101,19 @@ rebuild:
 
 #======= clean ========================================
 
-.PHONY: clean
+.PHONY: clean clean_dot
 clean:
 	rm -rf $(EXECUTABLE_DIR)/$(EXECUTABLE) $(COBJ)
 
+clean_dot:
+	rm -rf ../dot/
+
+dot:
+	code ../dot/img/out1.png
+
 #============ git =========================================
 
-NODEPS = clean
+NODEPS = clean clean_dot
 
 ifeq (0, $(words $(findstring $(MAKECMDGOALS), $(NODEPS))))
 include $(DEPS)
