@@ -33,10 +33,11 @@ void ListAssert(List_t* list, ListError_t err, const char* file, unsigned int li
 
     WayToErrDtor(err.err_way);
 
+    
+    if (status == ListStatus::WARN) return;
+    
     if (list->data) // if need to free allocated memory
         ListDtor(list);
-
-    if (status == ListStatus::WARN) return;
 
     exit(EXIT_FAILURE);
 

@@ -8,6 +8,7 @@
 void ListPrint(const List_t* list)
 {   
     assert(list);
+    assert(list->data);
 
     COLOR_PRINT(VIOLET, "list:\n");
 
@@ -24,7 +25,7 @@ void ListPrint(const List_t* list)
 
     printf(RESET);
 
-    COLOR_PRINT(VIOLET, "\nlist end:\n");
+    COLOR_PRINT(VIOLET, "\nlist end.\n");
 
     return;
 }
@@ -36,6 +37,7 @@ void ListConsoleDump(const List_t* list, const char* file, const int line, const
     assert(list);
     assert(file);
     assert(func);
+    assert(list->data);
 
     COLOR_PRINT(GREEN, "\nDUMP BEGIN\n\n");
 

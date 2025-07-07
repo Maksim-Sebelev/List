@@ -46,7 +46,7 @@ void LogInOnePSection(const char* format, ...);
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define LOG_PLACE(color)                                LogPrint(color, "%s:%d\nin '%s'\n",         FLF                                 )
+#define LOG_PLACE(color)                                LogPrint(color, "%s:%d\n%s\n",              FLF                                 )
 #define LOG_PRINT_PLACE(color, file, line, func)        LogPrint(color, "%s:%d\nin '%s'\n",         file  ,         line  ,         func)
 #define LOG_PRINT_STRUCT_PLACE(color, file, line, func) LogPrint(color, "%s:%d\nin '%s'\n", (place).file  , (place).line  , (place).func)
 

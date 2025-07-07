@@ -9,6 +9,8 @@
 
 #include "list/list_dump/list_gpraphic_dump.hpp"
 #include "list/list_dump/list_console_dump.hpp"
+#include "lib/logger/log.hpp"
+
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -43,7 +45,7 @@ static ListError_t  UpdateFreeAfterDecreaseRealloc(List_t* list, size_t new_capc
 
 ListError_t ListCtor(List_t* list, size_t capacity)
 {
-    assert(list);
+    LOG_PLACE(Green);  LOG_NS(); assert(list);
 
     list->capacity = (capacity > min_capacity) ? capacity : min_capacity;
 
@@ -62,7 +64,6 @@ ListError_t ListCtor(List_t* list, size_t capacity)
     list->data[1       ]           = ListElemCtor(0, 2, capacity    );
     list->data[capacity]           = ListElemCtor(0, 1, capacity - 1);
 
-
     for (size_t i = 2; i < capacity; i++)
         list->data[i] = ListElemCtor(0, i + 1, i - 1);
 
@@ -73,7 +74,7 @@ ListError_t ListCtor(List_t* list, size_t capacity)
 
 ListError_t ListDtor(List_t* list)
 {
-    assert(list);
+    LOG_PLACE(Green);  LOG_NS(); assert(list);
 
     ListElem* data = list->data;
 
@@ -91,7 +92,7 @@ ListError_t ListDtor(List_t* list)
 
 ListError_t ListInsertAfter(List_t* list, const size_t ref_elem, const list_elem_t insert_elem, size_t* insert_place)
 {
-    assert(list);
+    LOG_PLACE(Green);  LOG_NS(); assert(list);
     assert(insert_place);
 
     ListError_t err = {};
@@ -125,7 +126,7 @@ ListError_t ListInsertAfter(List_t* list, const size_t ref_elem, const list_elem
 
 ListError_t ListInsertBefore(List_t* list, const size_t ref_elem, const list_elem_t insert_elem, size_t* insert_place)
 {
-    assert(list);
+    LOG_PLACE(Green);  LOG_NS(); assert(list);
     assert(insert_place);
 
     ListError_t err = {};
@@ -155,18 +156,23 @@ ListError_t ListInsertBefore(List_t* list, const size_t ref_elem, const list_ele
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-ListError_t ListErase(List_t* list, const size_t erase_place, list_elem_t* erase_elem)
+ListError_t ListErase(List_t* list, size_t erase_place, list_elem_t* erase_elem)
 {
-    assert(list);
-    assert(erase_place);
+    LOG_PLACE(Green);  LOG_NS(); assert(list);
+    assert(erase_elem);
 
     ListError_t err = {};
 
     if (IsListEmpty(list))
         return GET_STATUS_WARN(ListWarningType::ERASE_IN_EMPTY_LIST);
 
+
     if (IsListReadyForDecreaseRealloc(list))
         RETURN_IF_ERR_OR_WARN(ListDecreaseRealloc(list));
+    
+    // LIST_CONSOLE_DUMP(list);
+    // LIST_PRINT(list);
+    // LIST_GRAPHIC_DUMP(list);
 
     list->size--;
 
@@ -197,7 +203,7 @@ ListError_t ListErase(List_t* list, const size_t erase_place, list_elem_t* erase
 
 ListError_t ListPushBack(List_t* list, const list_elem_t push_elem, size_t* push_place)
 {
-    assert(list);
+    LOG_PLACE(Green);  LOG_NS(); assert(list);
     assert(push_place);
     
     ListError_t err = ListInsertAfter(list, GetTail(list), push_elem, push_place);
@@ -209,7 +215,7 @@ ListError_t ListPushBack(List_t* list, const list_elem_t push_elem, size_t* push
 
 ListError_t ListPushFront(List_t* list, const list_elem_t push_elem, size_t* push_place)
 {
-    assert(list);
+    LOG_PLACE(Green);  LOG_NS(); assert(list);
     assert(push_place);
 
     ListError_t err = ListInsertBefore(list, GetHead(list), push_elem, push_place);
@@ -221,7 +227,7 @@ ListError_t ListPushFront(List_t* list, const list_elem_t push_elem, size_t* pus
 
 ListError_t ListPopBack(List_t* list, list_elem_t* pop_elem)
 {
-    assert(list);
+    LOG_PLACE(Green);  LOG_NS(); assert(list);
     assert(pop_elem);
 
     ListError_t err = ListErase(list, GetTail(list), pop_elem);
@@ -233,7 +239,7 @@ ListError_t ListPopBack(List_t* list, list_elem_t* pop_elem)
 
 ListError_t ListPopFront(List_t* list, list_elem_t* pop_elem)
 {
-    assert(list);
+    LOG_PLACE(Green);  LOG_NS(); assert(list);
     assert(pop_elem);
 
     ListError_t err = ListErase(list, GetHead(list), pop_elem);
@@ -245,7 +251,7 @@ ListError_t ListPopFront(List_t* list, list_elem_t* pop_elem)
 
 static ListError_t ListIncreaseRealloc(List_t* list)
 {
-    assert(list);
+    LOG_PLACE(Green);  LOG_NS(); assert(list);
 
     const size_t now_capacity = GetCapacity(list);
 
@@ -273,7 +279,7 @@ static ListError_t ListIncreaseRealloc(List_t* list)
 
 static ListError_t UpdateFreeAfterIncreaseRealloc(List_t* list, size_t old_capacity, size_t new_capacity)
 {
-    assert(list);
+    LOG_PLACE(Green);  LOG_NS(); assert(list);
 
     list->free = old_capacity;
 
@@ -292,7 +298,7 @@ static ListError_t UpdateFreeAfterIncreaseRealloc(List_t* list, size_t old_capac
 
 static ListError_t ListDecreaseRealloc(List_t* list)
 {
-    assert(list);
+    LOG_PLACE(Green);  LOG_NS(); assert(list);
 
     const size_t old_capacity     = GetCapacity(list);
     const size_t tmp_new_capacity = old_capacity / decrease_realloc_coef;
@@ -320,7 +326,7 @@ static ListError_t ListDecreaseRealloc(List_t* list)
 
 static ListError_t UpdateFreeAfterDecreaseRealloc(List_t* list, size_t new_capcity)
 {
-    assert(list);
+    LOG_PLACE(Green);  LOG_NS(); assert(list);
 
     ListElem*    data = list->data;
     const size_t size = list->size;
@@ -354,8 +360,7 @@ static ListElem ListElemCtor(const list_elem_t value, const size_t next, const s
 
 list_elem_t GetDataElemValue(const List_t* list, size_t data_i)
 {
-    assert(list);
-
+    LOG_PLACE(Green);  LOG_NS(); assert(list);
     return list->data[data_i].value;
 }
 
@@ -363,8 +368,7 @@ list_elem_t GetDataElemValue(const List_t* list, size_t data_i)
 
 size_t GetTail(const List_t* list)
 {
-    assert(list);
-
+    LOG_PLACE(Green);  LOG_NS(); assert(list);
     return list->data[0].prev;
 }
 
@@ -372,8 +376,7 @@ size_t GetTail(const List_t* list)
 
 size_t GetNextIndex(const List_t* list, size_t NowIndex)
 {
-    assert(list);
-
+    LOG_PLACE(Green);  LOG_NS(); assert(list);
     return list->data[NowIndex].next;
 }
 
@@ -381,8 +384,7 @@ size_t GetNextIndex(const List_t* list, size_t NowIndex)
 
 size_t GetPrevIndex(const List_t* list, size_t NowIndex)
 {
-    assert(list);
-
+    LOG_PLACE(Green);  LOG_NS(); assert(list);
     return list->data[NowIndex].prev;
 }
 
@@ -390,8 +392,7 @@ size_t GetPrevIndex(const List_t* list, size_t NowIndex)
 
 size_t GetHead(const List_t* list)
 {
-    assert(list);
-
+    LOG_PLACE(Green);  LOG_NS(); assert(list);
     return list->data[0].next;
 }
 
@@ -399,8 +400,7 @@ size_t GetHead(const List_t* list)
 
 size_t GetFree(const List_t* list)
 {
-    assert(list);
-
+    LOG_PLACE(Green);  LOG_NS(); assert(list);
     return list->free;
 }
 
@@ -408,8 +408,7 @@ size_t GetFree(const List_t* list)
 
 size_t GetCapacity(const List_t* list)
 {
-    assert(list);
-
+    LOG_PLACE(Green);  LOG_NS(); assert(list);
     return list->capacity;
 }
 
@@ -417,8 +416,7 @@ size_t GetCapacity(const List_t* list)
 
 size_t GetDataSize(const List_t* list)
 {
-    assert(list);
-
+    LOG_PLACE(Green);  LOG_NS(); assert(list);
     return list->size;
 }
 
@@ -426,16 +424,15 @@ size_t GetDataSize(const List_t* list)
 
 static bool IsListFull(const List_t* list)
 {
-    assert(list);
-
-    return GetCapacity(list) == GetDataSize(list);
+    LOG_PLACE(Green);  LOG_NS(); assert(list);
+    return GetCapacity(list) == GetDataSize(list) + 1;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 static bool IsListEmpty(const List_t* list)
 {
-    assert(list);
+    LOG_PLACE(Green);  LOG_NS(); assert(list);
     return GetDataSize(list) == 0;
 }
 
@@ -443,7 +440,7 @@ static bool IsListEmpty(const List_t* list)
 
 static bool IsListReadyForDecreaseRealloc(const List_t* list)
 {
-    assert(list);
+    LOG_PLACE(Green);  LOG_NS(); assert(list);
 
     const size_t size     = GetDataSize(list); assert(size >= 1);
     const size_t capacity = GetCapacity(list);

@@ -26,6 +26,8 @@ void ListGraphicDump(const List_t* list, const char* file, const int line, const
     assert(list);
     assert(file);
     assert(func);
+    assert(list->data);
+
 
     if (system("mkdir -p ../dot/")     != 0 ||
         system("mkdir -p ../dot/dot/") != 0 ||
