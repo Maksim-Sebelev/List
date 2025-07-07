@@ -8,6 +8,7 @@
 #include "list/err_parse/err_parse.hpp"
 
 #include "list/list_dump/list_gpraphic_dump.hpp"
+#include "list/list_dump/list_console_dump.hpp"
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -28,9 +29,6 @@ static_assert(decrease_realloc_coef > 1, "");
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static size_t       GetNextInCtor                (const List_t* list, size_t Data_i);
-static size_t       GetPrevInCtor                (const List_t* list, size_t Data_i);
-
 static ListElem     ListElemCtor                 (const list_elem_t value, const size_t next, const size_t prev);
 static bool         IsListFull                   (const List_t* list);
 static bool         IsListEmpty                  (const List_t* list);
@@ -38,30 +36,8 @@ static bool         IsListReadyForDecreaseRealloc(const List_t* list);
 static ListError_t  ListIncreaseRealloc          (List_t* list);
 static ListError_t  ListDecreaseRealloc          (List_t* list);
 
-static ListError_t UpdateFreeAfterIncreaseRealloc(List_t* list, size_t old_capacity, size_t new_capacity);
-static ListError_t UpdateFreeAfterDecreaseRealloc(List_t* list, size_t new_capcity);
-
-//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-void PrintList(const List_t* list)
-{   
-    assert(list);
-
-    COLOR_PRINT(VIOLET, "List:\n");
-
-          size_t data_i = GetHead(list);
-    const size_t size   = GetDataSize(list);
-
-    for (size_t i = 0; i < size; i++)
-    {
-        COLOR_PRINT(GREEN, "%d ", GetDataElemValue(list, data_i));
-        data_i = GetNextIndex(list, data_i);
-    }
-
-    COLOR_PRINT(VIOLET, "\nList end:\n");
-
-    return;
-}
+static ListError_t  UpdateFreeAfterIncreaseRealloc(List_t* list, size_t old_capacity, size_t new_capacity);
+static ListError_t  UpdateFreeAfterDecreaseRealloc(List_t* list, size_t new_capcity);
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -69,23 +45,26 @@ ListError_t ListCtor(List_t* list, size_t capacity)
 {
     assert(list);
 
-    list->capacity    = capacity + 1;
-    list->size        = 0;
-    list->data        = (ListElem*) calloc(capacity + 1, sizeof(ListElem));
+    list->capacity = (capacity > min_capacity) ? capacity : min_capacity;
+
+    list->size     = 0;
+    list->data     = (ListElem*) calloc(capacity + 1, sizeof(ListElem)); // +1 for null element
 
     if (!list->data)
         return GET_STATUS_ERR(ListErrorType::FAILED_ALLOCATE_MEMORY_IN_CTOR);
 
-    list->data[GetTail(list)].prev = list->data[GetTail(list)].prev;
+    // list->data[GetTail(list)].prev = list->data[GetTail(list)].prev;
     list->data[0]            .next = list->data[GetTail(list)].next;
     list->data[GetTail(list)].next = 0;
     list->free                     = 1;
-    
-    list->data[0] = ListElemCtor(0, 0, 0); 
 
-    for (size_t i = 1; i < GetCapacity(list); i++)
-        list->data[i] = ListElemCtor(0, GetNextInCtor(list, i), GetPrevInCtor(list, i));
+    list->data[0       ]           = ListElemCtor(0, 0, 0           );
+    list->data[1       ]           = ListElemCtor(0, 2, capacity    );
+    list->data[capacity]           = ListElemCtor(0, 1, capacity - 1);
 
+
+    for (size_t i = 2; i < capacity; i++)
+        list->data[i] = ListElemCtor(0, i + 1, i - 1);
 
     return GET_STATUS_OK();
 }
@@ -106,103 +85,6 @@ ListError_t ListDtor(List_t* list)
     *list = {};
 
     return GET_STATUS_OK();
-}
-
-//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static ListError_t ListIncreaseRealloc(List_t* list)
-{
-    assert(list);
-
-    const size_t now_capacity  = GetCapacity(list);
-
-    if (now_capacity > max_capacity / increase_realloc_coef)
-        return GET_STATUS_WARN(ListWarningType::TO_BIG_CAPACITY);
-
-    const size_t new_capacity  = increase_realloc_coef * now_capacity; 
-    const size_t realloc_size  = new_capacity  * sizeof(ListElem);
-
-    list->data = (ListElem*) realloc(list->data, realloc_size);
-
-    if (!list->data)
-        return GET_STATUS_WARN(ListWarningType::FAILED_REALLOCATE_DATA_AFTER_INSTERT);
-    
-    list->capacity = new_capacity;
-
-    RETURN_IF_ERR_OR_WARN(
-    UpdateFreeAfterIncreaseRealloc(list, now_capacity, new_capacity)
-    );
-
-    return GET_STATUS_OK();
-}
-
-//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static ListError_t UpdateFreeAfterIncreaseRealloc(List_t* list, size_t old_capacity, size_t new_capacity)
-{
-    assert(list);
-
-    list->free = old_capacity;
-
-    ListElem* data = list->data; assert(data);
-
-    data[old_capacity    ] = ListElemCtor(0, old_capacity + 1, new_capacity - 1);
-    data[new_capacity - 1] = ListElemCtor(0, old_capacity, new_capacity - 1);
-
-    for (size_t i = old_capacity + 1; i < new_capacity - 1; i++)
-        data[i] = ListElemCtor(0, i + 1, i - 1);
-
-    return GET_STATUS_OK();
-}
-
-//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static ListError_t ListDecreaseRealloc(List_t* list)
-{
-    assert(list);
-
-    const size_t old_capacity     = GetCapacity(list);
-    const size_t tmp_new_capacity = old_capacity / decrease_realloc_coef;
-    const size_t new_capacity     = (tmp_new_capacity > min_capacity) ?
-                    
-    tmp_new_capacity : min_capacity;
-
-    if (old_capacity == new_capacity)
-        return GET_STATUS_OK();
-
-    const size_t realloc_size = new_capacity * sizeof(list->data[0]);
-
-    list->data = (ListElem*) realloc(list->data, realloc_size);
-
-    if (!list->data)
-        return GET_STATUS_WARN(ListWarningType::FAILED_REALLOCATE_DATA_AFTER_ERASE);
-
-    RETURN_IF_ERR_OR_WARN(
-    UpdateFreeAfterDecreaseRealloc(list, new_capacity);
-    );
-
-    return GET_STATUS_OK();
-}
-
-//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static ListError_t UpdateFreeAfterDecreaseRealloc(List_t* list, size_t new_capcity)
-{
-    assert(list);
-
-    ListElem*    data = list->data;
-    const size_t size = list->size;
-
-    const size_t capacity = new_capcity;
-
-    size_t data_pointer = list->free;
-
-    for (size_t i = size; i < capacity; i++)
-    {
-        data[data_pointer] = ListElemCtor(0, GetNextIndex(list, data_pointer), 0);
-        data_pointer = GetNextIndex(list, data_pointer);
-        
-    }
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -361,6 +243,103 @@ ListError_t ListPopFront(List_t* list, list_elem_t* pop_elem)
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+static ListError_t ListIncreaseRealloc(List_t* list)
+{
+    assert(list);
+
+    const size_t now_capacity = GetCapacity(list);
+
+    if (now_capacity > max_capacity / increase_realloc_coef)
+        return GET_STATUS_WARN(ListWarningType::TO_BIG_CAPACITY);
+
+    const size_t new_capacity  = increase_realloc_coef * now_capacity; 
+    const size_t realloc_size  = (new_capacity + 1)  * sizeof(ListElem);
+
+    list->data = (ListElem*) realloc(list->data, realloc_size);
+
+    if (!list->data)
+        return GET_STATUS_WARN(ListWarningType::FAILED_REALLOCATE_DATA_AFTER_INSTERT);
+    
+    list->capacity = new_capacity;
+
+    RETURN_IF_ERR_OR_WARN(
+    UpdateFreeAfterIncreaseRealloc(list, now_capacity, new_capacity)
+    );
+
+    return GET_STATUS_OK();
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static ListError_t UpdateFreeAfterIncreaseRealloc(List_t* list, size_t old_capacity, size_t new_capacity)
+{
+    assert(list);
+
+    list->free = old_capacity;
+
+    ListElem* data = list->data; assert(data);
+
+    data[old_capacity] = ListElemCtor(0, old_capacity + 1, new_capacity    );
+    data[new_capacity] = ListElemCtor(0, old_capacity    , new_capacity - 1);
+
+    for (size_t i = old_capacity + 1; i < new_capacity; i++)
+        data[i] = ListElemCtor(0, i + 1, i - 1);
+
+    return GET_STATUS_OK();
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static ListError_t ListDecreaseRealloc(List_t* list)
+{
+    assert(list);
+
+    const size_t old_capacity     = GetCapacity(list);
+    const size_t tmp_new_capacity = old_capacity / decrease_realloc_coef;
+    const size_t new_capacity     = (tmp_new_capacity > min_capacity) ?
+                                     tmp_new_capacity : min_capacity;
+
+    if (old_capacity == new_capacity)
+        return GET_STATUS_OK();
+
+    const size_t realloc_size = (new_capacity) * sizeof(list->data[0]);
+
+    list->data = (ListElem*) realloc(list->data, realloc_size);
+
+    if (!list->data)
+        return GET_STATUS_WARN(ListWarningType::FAILED_REALLOCATE_DATA_AFTER_ERASE);
+
+    // RETURN_IF_ERR_OR_WARN(
+    // UpdateFreeAfterDecreaseRealloc(list, new_capacity);
+    // );
+
+    return GET_STATUS_OK();
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static ListError_t UpdateFreeAfterDecreaseRealloc(List_t* list, size_t new_capcity)
+{
+    assert(list);
+
+    ListElem*    data = list->data;
+    const size_t size = list->size;
+
+    const size_t capacity = new_capcity;
+
+    size_t data_pointer = list->free;
+
+    for (size_t i = size; i < capacity; i++)
+    {
+        data[data_pointer] = ListElemCtor(0, GetNextIndex(list, data_pointer), 0);
+        data_pointer = GetNextIndex(list, data_pointer);
+    }
+
+    return GET_STATUS_OK();
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 static ListElem ListElemCtor(const list_elem_t value, const size_t next, const size_t prev)
 {
     return (ListElem)
@@ -373,10 +352,11 @@ static ListElem ListElemCtor(const list_elem_t value, const size_t next, const s
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-list_elem_t GetDataElemValue(const List_t* list, size_t Data_i)
+list_elem_t GetDataElemValue(const List_t* list, size_t data_i)
 {
     assert(list);
-    return list->data[Data_i].value;
+
+    return list->data[data_i].value;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -384,6 +364,7 @@ list_elem_t GetDataElemValue(const List_t* list, size_t Data_i)
 size_t GetTail(const List_t* list)
 {
     assert(list);
+
     return list->data[0].prev;
 }
 
@@ -391,7 +372,8 @@ size_t GetTail(const List_t* list)
 
 size_t GetNextIndex(const List_t* list, size_t NowIndex)
 {
-    assert(list);   
+    assert(list);
+
     return list->data[NowIndex].next;
 }
 
@@ -400,6 +382,7 @@ size_t GetNextIndex(const List_t* list, size_t NowIndex)
 size_t GetPrevIndex(const List_t* list, size_t NowIndex)
 {
     assert(list);
+
     return list->data[NowIndex].prev;
 }
 
@@ -408,6 +391,7 @@ size_t GetPrevIndex(const List_t* list, size_t NowIndex)
 size_t GetHead(const List_t* list)
 {
     assert(list);
+
     return list->data[0].next;
 }
 
@@ -416,6 +400,7 @@ size_t GetHead(const List_t* list)
 size_t GetFree(const List_t* list)
 {
     assert(list);
+
     return list->free;
 }
 
@@ -424,6 +409,7 @@ size_t GetFree(const List_t* list)
 size_t GetCapacity(const List_t* list)
 {
     assert(list);
+
     return list->capacity;
 }
 
@@ -432,6 +418,7 @@ size_t GetCapacity(const List_t* list)
 size_t GetDataSize(const List_t* list)
 {
     assert(list);
+
     return list->size;
 }
 
@@ -440,7 +427,8 @@ size_t GetDataSize(const List_t* list)
 static bool IsListFull(const List_t* list)
 {
     assert(list);
-    return GetCapacity(list) == GetDataSize(list) + 1;
+
+    return GetCapacity(list) == GetDataSize(list);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -461,26 +449,6 @@ static bool IsListReadyForDecreaseRealloc(const List_t* list)
     const size_t capacity = GetCapacity(list);
 
     return size <= capacity / decrease_realloc_coef;
-}
-
-//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static size_t GetNextInCtor(const List_t* list, size_t i)
-{
-    assert(list);
-
-    size_t temp_next = (i + 1) % (GetCapacity(list));
-    return temp_next ? temp_next : 1;
-}
-
-//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-static size_t GetPrevInCtor(const List_t* list, size_t i)
-{
-    assert(list);
-    
-    size_t temp_prev = (i - 1) % (GetCapacity(list)); 
-    return temp_prev ? temp_prev : GetCapacity(list) - 1;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

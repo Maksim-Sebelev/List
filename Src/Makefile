@@ -53,6 +53,7 @@ CSRC =  main.cpp                         \
 		list/src/list/list.cpp           \
 		list/src/list/err_parse/err_parse.cpp \
 		list/src/list/list_dump/list_graphic_dump.cpp \
+		list/src/list/list_dump/list_console_dump.cpp \
 		common/src/lib/lib.cpp           \
 		common/src/lib/functions_for_files/files.cpp \
 		#list/src/list_dump/list_.cpp     \

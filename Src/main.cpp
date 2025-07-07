@@ -1,6 +1,7 @@
 #include "list/list.hpp"
 #include "list/err_parse/err_parse.hpp"
 #include "list/list_dump/list_gpraphic_dump.hpp"
+#include "list/list_dump/list_console_dump.hpp"
 
 int main()
 {
@@ -11,16 +12,16 @@ int main()
     size_t      data_pointer = 0;
     list_elem_t value        = 0;
 
-    for (int i = 1; i <= 20; i++)
-        LIST_PUSH_BACK(&list, i, &data_pointer);
+    for (int i = 0; i < 16; i++)
+        LIST_PUSH_BACK(&list, i + 101, &data_pointer);
 
     // LIST_PUSH_FRONT(&list, 111, &data_pointer);
 
-    
     // LIST_ERASE(&list, 5, &value);
-    
-    PrintList(&list);
-    LIST_GRAPHIC_DUMP(&list);
+
+    LIST_PRINT        (&list);
+    LIST_CONSOLE_DUMP (&list);
+    LIST_GRAPHIC_DUMP (&list);
 
     LIST_DTOR(&list);
 
