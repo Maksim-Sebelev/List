@@ -15,25 +15,29 @@ int main()
     LIST_CTOR(&list, 16);
 
     size_t      data_pointer = 0;
-    
-    for (int i = 0; i < 10; i++)
+    list_elem_t value = 0;
+
+    for (int i = 0; i < 32; i++)
         LIST_PUSH_BACK(&list, i + 101, &data_pointer);
 
-    LIST_INSERT_AFTER(&list, 5, 333, &data_pointer);
-
-    LIST_PRINT        (&list);
-    LIST_CONSOLE_DUMP (&list);
-    LIST_GRAPHIC_DUMP (&list);
-
-    // for (int i = 0; i < 15; i++)
-    // {    
-    //     list_elem_t value        = 0;
-    //     LIST_POP_BACK(&list, &value);
-    // }
+    // LIST_INSERT_AFTER(&list, 40, 333, &data_pointer);
+    // LIST_ERASE(&list, 10, &value);
+    // LIST_ERASE(&list, 9, &value);
+    // LIST_ERASE(&list, 8, &value);
+    // LIST_ERASE(&list, 7, &value);
+    // LIST_ERASE(&list, 6, &value);
+    // LIST_ERASE(&list, 5, &value);
 
     // LIST_PRINT        (&list);
     // LIST_CONSOLE_DUMP (&list);
     // LIST_GRAPHIC_DUMP (&list);
+
+    for (int i = 0; i < 10; i++)
+        LIST_POP_FRONT(&list, &value);
+
+    LIST_PRINT        (&list);
+    LIST_CONSOLE_DUMP (&list);
+    LIST_GRAPHIC_DUMP (&list);
 
     LIST_DTOR(&list);
 
