@@ -8,61 +8,66 @@
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void        ListAssert            (List_t* list, ListError_t err, const char* file, unsigned int line, const char* func);
+void        ListAssert            (List_t* list, ListError_t err ON_DEBUG(, const char* file, unsigned int line, const char* func));
 
+ON_DEBUG(
 ListError_t ErrTransfer           (ListError_t* err         , const char* file, unsigned int line, const char* func);
-
-ListError_t   ListErrorStatusCtor (ListErrorType   err_type , const char* file, unsigned int line, const char* func);
-ListError_t ListWarningStatusCtor (ListWarningType warn_type, const char* file, unsigned int line, const char* func);
+)
+ListError_t   ListErrorStatusCtor (ListErrorType   err_type  ON_DEBUG(, const char* file, unsigned int line, const char* func));
+ListError_t ListWarningStatusCtor (ListWarningType warn_type ON_DEBUG(, const char* file, unsigned int line, const char* func));
 ListError_t      ListOkStatusCtor ();
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define LIST_CTOR(list, capacity)                        LIST_ASSERT(list, ListCtor        (list, capacity    ))
-#define LIST_DTOR(list)                                  LIST_ASSERT(list, ListDtor        (list              ))
+#define LIST_CTOR(         list, capacity              ) LIST_ASSERT(list, ListCtor        (list, capacity    ))
+#define LIST_DTOR(         list                        ) LIST_ASSERT(list, ListDtor        (list              ))
 #define LIST_INSERT_AFTER( list, ref_elem, value, place) LIST_ASSERT(list, ListInsertAfter (list, ref_elem, value, place))
 #define LIST_INSERT_BEFORE(list, ref_elem, value, place) LIST_ASSERT(list, ListInsertBefore(list, ref_elem, value, place))
-#define LIST_ERASE(        list, place, value          ) LIST_ASSERT(list, ListErase       (list, place, value))
-#define LIST_PUSH_BACK(    list, value, place          ) LIST_ASSERT(list, ListPushBack    (list, value, place))
-#define LIST_PUSH_FRONT(   list, value, place          ) LIST_ASSERT(list, ListPushFront   (list, value, place))
+#define LIST_ERASE(        list, place,    value       ) LIST_ASSERT(list, ListErase       (list, place, value))
+#define LIST_PUSH_BACK(    list, value,    place       ) LIST_ASSERT(list, ListPushBack    (list, value, place))
+#define LIST_PUSH_FRONT(   list, value,    place       ) LIST_ASSERT(list, ListPushFront   (list, value, place))
 #define LIST_POP_BACK(     list, value                 ) LIST_ASSERT(list, ListPopBack     (list, value       ))
 #define LIST_POP_FRONT(    list, value                 ) LIST_ASSERT(list, ListPopFront    (list, value       ))
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define LIST_ASSERT(list_ptr, err) ListAssert(list_ptr, err, FLF)
+#define LIST_ASSERT(list_ptr, err) ListAssert(list_ptr, err ON_DEBUG(, FLF))
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #define GET_STATUS_OK(           ) ListOkStatusCtor     (              )
-#define GET_STATUS_WARN(warn_type) ListWarningStatusCtor(warn_type, FLF)
-#define GET_STATUS_ERR( err_type ) ListErrorStatusCtor  (err_type , FLF)
+#define GET_STATUS_WARN(warn_type) ListWarningStatusCtor(warn_type ON_DEBUG(, FLF))
+#define GET_STATUS_ERR( err_type ) ListErrorStatusCtor  (err_type  ON_DEBUG(, FLF))
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define ASSERT_PRINT(err_ptr)      ListAssertPrint      (err_ptr  , FLF)
+#define ASSERT_PRINT(err_ptr)      ListAssertPrint      (err_ptr  ON_DEBUG(, FLF))
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+#ifdef _DEBUG
 #define TRANSFER_ERROR(err_ptr)    ErrTransfer          (err_ptr  ,  FLF)
+#else // _DEBUG
+#define TRANSFER_ERROR(err_ptr) (*(err_ptr))
+#endif // _DENBUG
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------                          
 
-#define RETURN_IF_ERR(err) do                                       \
-{                                                                    \
-    ListError_t err_copy = err;                                       \
-    if (err_copy.status == ListStatus::ERR)                            \
-        RETURN_WHEN_FUNC_CALLS_LOG(TRANSFER_ERROR(&err_copy));   \
-} while(0)                                                               \
+#define RETURN_IF_ERR(err) do                               \
+{                                                            \
+    ListError_t err_copy = err;                               \
+    if (err_copy.status == ListStatus::ERR)                    \
+        RETURN_WHEN_FUNC_CALLS_LOG(TRANSFER_ERROR(&err_copy));  \
+} while(0)                                                       \
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#define RETURN_IF_ERR_OR_WARN(err) do                             \
-{                                                                  \
-    ListError_t err_copy = err;                                     \
-    if (err_copy.status != ListStatus::OK)                           \
-        RETURN_WHEN_FUNC_CALLS_LOG(TRANSFER_ERROR(&err_copy)); \
-} while(0)                                                             \
+#define RETURN_IF_ERR_OR_WARN(err) do                       \
+{                                                            \
+    ListError_t err_copy = err;                               \
+    if (err_copy.status != ListStatus::OK)                     \
+        RETURN_WHEN_FUNC_CALLS_LOG(TRANSFER_ERROR(&err_copy));  \
+} while(0)                                                       \
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 

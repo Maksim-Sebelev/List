@@ -5,20 +5,21 @@
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+ON_DEBUG(
 static WayToErr* WayToErrCtor               (WayToErr* old_way, CodePlace* place);
 static void      WayToErrDtor               (WayToErr* way);
-
-static void      ListAssertPrint            (const ListError_t* err, const CodePlace* assert_place);
+static void      PrintWayToErr              (const WayToErr   * way_to_err, const ListStatus* status);
+static void      PrintFullWayToErrWithAssert(const CodePlace  * assert_place, const WayToErr* way_to_err, const ListStatus* status);
+)
+static void      ListAssertPrint            (const ListError_t* err ON_DEBUG(, const CodePlace* assert_place));
 static void      PrintErrorOrWarn           (const ListError_t* err);    // return true if status OK, else return false
 static void      PrintError                 (const ListError_t* err);
 static void      PrintWarning               (const ListError_t* err);
-static void      PrintWayToErr              (const WayToErr   * way_to_err, const ListStatus* status);
-static void      PrintFullWayToErrWithAssert(const CodePlace  * assert_place, const WayToErr* way_to_err, const ListStatus* status);
 
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void ListAssert(List_t* list, ListError_t err, const char* file, unsigned int line, const char* func)
+void ListAssert(List_t* list, ListError_t err ON_DEBUG(, const char* file, unsigned int line, const char* func))
 {
     assert(file);
     assert(func);
@@ -27,13 +28,15 @@ void ListAssert(List_t* list, ListError_t err, const char* file, unsigned int li
 
     if (status == ListStatus::OK) return;
 
+    ON_DEBUG(
     CodePlace assert_place = CodePlaceCtor(file, line, func);
+    )
 
-    ListAssertPrint(&err, &assert_place);
-
+    ListAssertPrint(&err ON_DEBUG(, &assert_place));
+    ON_DEBUG(
     WayToErrDtor(err.err_way);
+    )
 
-    
     if (status == ListStatus::WARN) return;
     
     if (list->data) // if need to free allocated memory
@@ -45,7 +48,8 @@ void ListAssert(List_t* list, ListError_t err, const char* file, unsigned int li
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+ON_DEBUG
+(
 ListError_t ErrTransfer(ListError_t* err, const char* file, unsigned int line, const char* func)
 {
     assert(err);
@@ -61,18 +65,20 @@ ListError_t ErrTransfer(ListError_t* err, const char* file, unsigned int line, c
 
     return *err;
 }
-
+)
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-ListError_t ListErrorStatusCtor(ListErrorType err_type, const char* file, unsigned int line, const char* func)
+ListError_t ListErrorStatusCtor(ListErrorType err_type ON_DEBUG(, const char* file, unsigned int line, const char* func))
 {
     assert(file);
     assert(func);
 
     ListError_t err = {};
 
+    ON_DEBUG(
     CodePlace place = CodePlaceCtor(file, line, func);
     err.err_way     = WayToErrCtor(nullptr, &place);
+    )
 
     err.status      = ListStatus::ERR;
     err.value.err   = err_type;
@@ -82,16 +88,18 @@ ListError_t ListErrorStatusCtor(ListErrorType err_type, const char* file, unsign
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-ListError_t ListWarningStatusCtor(ListWarningType warn_type, const char* file, unsigned int line, const char* func)
+ListError_t ListWarningStatusCtor(ListWarningType warn_type ON_DEBUG(, const char* file, unsigned int line, const char* func))
 {
     assert(file);
     assert(func);
 
     ListError_t err = {};
 
+    ON_DEBUG(
     CodePlace place = CodePlaceCtor(file, line, func);
     err.err_way     =  WayToErrCtor(nullptr, &place);
-
+    )
+    
     err.status     = ListStatus::WARN;
     err.value.warn = warn_type;
 
@@ -110,6 +118,8 @@ ListError_t ListOkStatusCtor()
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+ON_DEBUG
+(
 static WayToErr* WayToErrCtor(WayToErr* old_way, CodePlace* place)
 {
     assert(place);
@@ -124,9 +134,12 @@ static WayToErr* WayToErrCtor(WayToErr* old_way, CodePlace* place)
 
     return way_to_err;
 }
+)
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+ON_DEBUG
+(
 void WayToErrDtor(WayToErr* way)
 {
     if (!way) return;
@@ -137,10 +150,10 @@ void WayToErrDtor(WayToErr* way)
 
     return WayToErrDtor(next_way);
 }
-
+)
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void ListAssertPrint(const ListError_t* err, const CodePlace* assert_place)
+static void ListAssertPrint(const ListError_t* err ON_DEBUG(, const CodePlace* assert_place))
 {
     assert(err );
     assert(assert_place);
@@ -148,10 +161,15 @@ static void ListAssertPrint(const ListError_t* err, const CodePlace* assert_plac
 
     PrintErrorOrWarn(err);
 
+    ON_DEBUG(
     WayToErr* way_to_err = err->err_way;
+    )
+
     ListStatus status = err->status; 
 
+    ON_DEBUG(
     PrintFullWayToErrWithAssert(assert_place, way_to_err, &status);
+    )
 
     return;
 }
@@ -233,6 +251,8 @@ static void PrintWarning(const ListError_t* err)
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+ON_DEBUG
+(
 static void PrintWayToErr(const WayToErr* way_to_err, const ListStatus* status)
 {
     assert(status);
@@ -255,9 +275,12 @@ static void PrintWayToErr(const WayToErr* way_to_err, const ListStatus* status)
 
     return PrintWayToErr(way_to_err->previous_place, status);
 }
+)
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+ON_DEBUG
+(
 static void PrintFullWayToErrWithAssert(const CodePlace* assert_place, const WayToErr* way_to_err, const ListStatus* status)
 {
     assert(assert_place);
@@ -279,6 +302,7 @@ static void PrintFullWayToErrWithAssert(const CodePlace* assert_place, const Way
 
     return;
 }
+)
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 

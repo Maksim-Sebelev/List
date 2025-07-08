@@ -14,12 +14,14 @@ int main()
     size_t      data_pointer = 0;
     list_elem_t value = 0;
 
-    // const size_t a = ~ (size_t) 0; 
-    const size_t a = 17;
+    const size_t a = ~ (size_t) 0 / 8; 
+    // const size_t a = 17;
 
     for (size_t i = 0; i < a; i++)
+    {
         LIST_PUSH_BACK(&list, (int) i + 101, &data_pointer);
-
+        if (i % 1000 == 0) printf("%d\n", i);
+    }
     // LIST_INSERT_AFTER(&list, 40, 333, &data_pointer);
     // LIST_ERASE(&list, 10, &value);
     // LIST_ERASE(&list, 9, &value);
