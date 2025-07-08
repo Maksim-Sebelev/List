@@ -41,7 +41,7 @@ endif
 
 OUT_O_DIR      ?= ../bin
 EXECUTABLE_DIR ?= ../build
-COMMONINC       = -I./list/include -I./common/include
+COMMONINC       = -I./list/include/ -I./common/include/ -I./list/public/
 SRC             = ./src
 EXECUTABLE     ?= list
 
@@ -49,17 +49,17 @@ EXECUTABLE     ?= list
 
 override CFLAGS += $(COMMONINC)
 
-CSRC =  main.cpp                         \
-		list/src/list/list.cpp           \
-		list/src/list/err_parse/err_parse.cpp \
-		list/src/list/list_dump/list_graphic_dump.cpp \
-		list/src/list/list_dump/list_console_dump.cpp \
-		common/src/lib/lib.cpp           \
+CSRC =  main.cpp                                     \
+		list/src/list/list.cpp                       \
+		list/src/list/err_parse/err_parse.cpp        \
+		common/src/lib/lib.cpp                       \
 		common/src/lib/functions_for_files/files.cpp \
-		#list/src/list_dump/list_.cpp     \
 
 ifeq ($(BUILD_TYPE), debug)
-	CSRC += common/src/lib/logger/log.cpp
+	CSRC += common/src/lib/logger/log.cpp                 \
+			list/src/list/list_dump/list_graphic_dump.cpp \
+			list/src/list/list_dump/list_console_dump.cpp \
+
 endif
 
 COBJ := $(addprefix $(OUT_O_DIR)/,$(CSRC:.cpp=.o))
@@ -108,9 +108,6 @@ clean:
 
 clean_dot:
 	rm -rf ../dot/
-
-dot:
-	code ../dot/img/out1.png
 
 #============ git =========================================
 

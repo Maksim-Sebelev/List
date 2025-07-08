@@ -3,7 +3,9 @@
 #include "list/list.hpp"
 #include "lib/lib.hpp"
 #include "lib/functions_for_files/files.hpp"
+#include "list/list_dump/list_gpraphic_dump.hpp"
 
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 static void GraphicDumpHelper    (const List_t* list, const char* file, const int line, const char* func);
 static void DotBegin             (FILE* dot_file);
@@ -14,7 +16,7 @@ static void DotCreateFreeNode    (FILE* dot_file, const List_t* list, const size
 static void DotCreateHeadNode    (FILE* dot_file, const List_t* list);
 static void DotCreateAllNodes    (FILE* dot_file, const List_t* list);
 static void DotCreateNextEdges   (FILE* dot_file, const List_t* list);
-static void DotCreatePrevEdges   (FILE* dot_file, const List_t* list);
+// static void DotCreatePrevEdges   (FILE* dot_file, const List_t* list); // is equal to next edges
 static void DotCreateEdges       (FILE* dot_file, const List_t* list);
 static void DotCreateRestList    (FILE* dot_file, const List_t* list);
 static void DotCreateDumpPlace   (FILE* dot_file, const char* file, const int line, const char* func);
@@ -108,7 +110,7 @@ static void DotCreateNodeInfo(FILE* dot_file, const ListElem* elem, size_t index
     size_t      prev    = elem->prev;
 
     fprintf(dot_file, "label =\"value : %d " , value);
-    fprintf(dot_file, "| index: %d "         , index);
+    fprintf(dot_file, "| index: %lu "        , index);
     fprintf(dot_file, "| <f0> next: %lu "    , next );
     fprintf(dot_file, "| <f1> prev: %lu\", " , prev ); 
     fprintf(dot_file, "color = \"#008080\"];\n");
@@ -124,10 +126,6 @@ static void DotCreateNotFreeNode(FILE* dot_file, const List_t* list, const size_
     assert(list);
 
     ListElem   list_elem = list->data[node_i];
-
-    list_elem_t value  = list_elem.value;
-    size_t      next   = list_elem.next ;
-    size_t      prev   = list_elem.prev ;
 
     fprintf(dot_file, "node%lu", node_i);
     fprintf(dot_file, "[shape=Mrecord, style=filled, fillcolor=\"#15a6bf\"");
@@ -243,22 +241,22 @@ static void DotCreateNextEdges(FILE* dot_file, const List_t* list)
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void DotCreatePrevEdges(FILE* dot_file, const List_t* list)
-{
-    assert(dot_file);
-    assert(list);
+// static void DotCreatePrevEdges(FILE* dot_file, const List_t* list)
+// {
+//     assert(dot_file);
+//     assert(list);
 
-    fprintf(dot_file, "edge[color=\"red\", fontsize=12, constraint=false];\n");
+//     fprintf(dot_file, "edge[color=\"red\", fontsize=12, constraint=false];\n");
 
-    const size_t capacity = GetCapacity(list);
+//     const size_t capacity = GetCapacity(list);
 
-    for (size_t node_i = 0; node_i <= capacity;  node_i++)
-        fprintf(dot_file, "node%lu->node%lu;\n", node_i, GetPrevIndex(list, node_i));
+//     for (size_t node_i = 0; node_i <= capacity;  node_i++)
+//         fprintf(dot_file, "node%lu->node%lu;\n", node_i, GetPrevIndex(list, node_i));
 
-    return;
-}
+//     return;
+// }
 
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 static void DotCreateEdges(FILE* dot_file, const List_t* list)
 {

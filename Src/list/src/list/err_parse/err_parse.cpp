@@ -172,8 +172,6 @@ static void PrintError(const ListError_t* err)
     switch (err_type)
     {
         case ListErrorType::FAILED_ALLOCATE_MEMORY_IN_CTOR:
-            // assert(err->err_info.function);
-            // printf("failed allocate memory in '%s'", err->err_info.function);
             printf("failed allocate memory for List_t::data.");
             break;
 

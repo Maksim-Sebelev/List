@@ -7,10 +7,11 @@
 #include "list/list.hpp"
 #include "list/err_parse/err_parse.hpp"
 
+#ifdef _DEBUG
 #include "list/list_dump/list_gpraphic_dump.hpp"
 #include "list/list_dump/list_console_dump.hpp"
 #include "lib/logger/log.hpp"
-
+#endif // _DEBUG
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -31,15 +32,11 @@ static_assert(decrease_realloc_coef > 1, "");
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static ListElem     ListElemCtor                 (const list_elem_t value, const size_t next, const size_t prev);
-static bool         IsListFull                   (const List_t* list);
-static bool         IsListEmpty                  (const List_t* list);
-static bool         IsListReadyForDecreaseRealloc(const List_t* list);
-static ListError_t  ListIncreaseRealloc          (List_t* list);
-static ListError_t  ListDecreaseRealloc          (List_t* list);
-
-static ListError_t  UpdateFreeAfterIncreaseRealloc(List_t* list, size_t old_capacity, size_t new_capacity);
-static ListError_t  UpdateFreeAfterDecreaseRealloc(List_t* list, size_t new_capcity);
+static ListElem     ListElemCtor                   (const list_elem_t value, const size_t next, const size_t prev);
+static bool         IsListFull                     (const List_t* list);
+static bool         IsListEmpty                    (const List_t* list);
+static ListError_t  ListIncreaseRealloc            (List_t* list);
+static ListError_t  UpdateFreeAfterIncreaseRealloc (List_t* list, size_t old_capacity, size_t new_capacity);
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -54,21 +51,21 @@ ListError_t ListCtor(List_t* list, size_t capacity)
     list->data     = (ListElem*) calloc(capacity + 1, sizeof(ListElem)); // +1 for null element
 
     if (!list->data)
-        return GET_STATUS_ERR(ListErrorType::FAILED_ALLOCATE_MEMORY_IN_CTOR);
+        RETURN_WHEN_FUNC_CALLS_LOG(GET_STATUS_ERR(ListErrorType::FAILED_ALLOCATE_MEMORY_IN_CTOR));
+        // return GET_STATUS_ERR(ListErrorType::FAILED_ALLOCATE_MEMORY_IN_CTOR);
 
-    // list->data[GetTail(list)].prev = list->data[GetTail(list)].prev;
-    list->data[0]            .next = list->data[GetTail(list)].next;
-    list->data[GetTail(list)].next = 0;
+    // list->data[0]            .next = list->data[GetTail(list)].next;
+    // list->data[GetTail(list)].next = 0;
     list->free                     = 1;
 
-    list->data[0       ]           = ListElemCtor(0, 0, 0           );
-    list->data[1       ]           = ListElemCtor(0, 2, capacity    );
+    list->data[0]                  = ListElemCtor(0, 0, 0           );
+    list->data[1]                  = ListElemCtor(0, 2, capacity    );
     list->data[capacity]           = ListElemCtor(0, 1, capacity - 1);
 
     for (size_t i = 2; i < capacity; i++)
         list->data[i] = ListElemCtor(0, i + 1, i - 1);
 
-    return GET_STATUS_OK();
+    RETURN_WHEN_FUNC_CALLS_LOG(GET_STATUS_OK());
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -81,13 +78,14 @@ ListError_t ListDtor(List_t* list)
     ListElem* data = list->data;
 
     if (!data)
-        return GET_STATUS_ERR(ListErrorType::TRY_TO_DTOR_NULLPTR_DATA);
+        RETURN_WHEN_FUNC_CALLS_LOG(GET_STATUS_ERR(ListErrorType::TRY_TO_DTOR_NULLPTR_DATA));
+        // return GET_STATUS_ERR(ListErrorType::TRY_TO_DTOR_NULLPTR_DATA);
 
     FREE(list->data);
 
     *list = {};
 
-    return GET_STATUS_OK();
+    RETURN_WHEN_FUNC_CALLS_LOG(GET_STATUS_OK());
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -98,8 +96,6 @@ ListError_t ListInsertAfter(List_t* list, const size_t ref_elem, const list_elem
 
     assert(list);
     assert(insert_place);
-
-    ListError_t err = {};
 
     if (IsListFull(list))
         RETURN_IF_ERR_OR_WARN(ListIncreaseRealloc(list));
@@ -123,7 +119,7 @@ ListError_t ListInsertAfter(List_t* list, const size_t ref_elem, const list_elem
     list->data[free_next].prev  = free_prev  ;
     list->data[free_prev].next  = free_next  ;
 
-    return GET_STATUS_OK();
+    RETURN_WHEN_FUNC_CALLS_LOG(GET_STATUS_OK());
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -131,11 +127,8 @@ ListError_t ListInsertAfter(List_t* list, const size_t ref_elem, const list_elem
 ListError_t ListInsertBefore(List_t* list, const size_t ref_elem, const list_elem_t insert_elem, size_t* insert_place)
 {
     LOG_FUNC_ENTRY();
-
     assert(list);
     assert(insert_place);
-
-    ListError_t err = {};
 
     if (IsListFull(list))
         RETURN_IF_ERR_OR_WARN(ListIncreaseRealloc(list));
@@ -157,7 +150,8 @@ ListError_t ListInsertBefore(List_t* list, const size_t ref_elem, const list_ele
     list->data[free_next].prev = free_prev;
     list->data[free_prev].next = free_next;
 
-    return GET_STATUS_OK();
+    RETURN_WHEN_FUNC_CALLS_LOG(GET_STATUS_OK());
+    // return GET_STATUS_OK();
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -165,18 +159,12 @@ ListError_t ListInsertBefore(List_t* list, const size_t ref_elem, const list_ele
 ListError_t ListErase(List_t* list, size_t erase_place, list_elem_t* erase_elem)
 {
     LOG_FUNC_ENTRY();
-
-
     assert(list);
     assert(erase_elem);
 
-    ListError_t err = {};
-
     if (IsListEmpty(list))
-    {
-        LOG_FUNC_EXIT();
-        return GET_STATUS_WARN(ListWarningType::ERASE_IN_EMPTY_LIST);
-    }
+        RETURN_WHEN_FUNC_CALLS_LOG(GET_STATUS_WARN(ListWarningType::ERASE_IN_EMPTY_LIST));
+        // return GET_STATUS_WARN(ListWarningType::ERASE_IN_EMPTY_LIST);
 
     list->size--;
 
@@ -200,9 +188,7 @@ ListError_t ListErase(List_t* list, size_t erase_place, list_elem_t* erase_elem)
     list->data[free_prev  ].next = erase_place;
     list->data[free_next  ].prev = erase_place;
     
-    LOG_FUNC_EXIT();
-
-    return GET_STATUS_OK();
+    RETURN_WHEN_FUNC_CALLS_LOG(GET_STATUS_OK());
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -216,8 +202,7 @@ ListError_t ListPushBack(List_t* list, const list_elem_t push_elem, size_t* push
     
     ListError_t err = ListInsertAfter(list, GetTail(list), push_elem, push_place);
 
-    LOG_FUNC_EXIT();
-    return TRANSFER_ERROR(&err);
+    RETURN_WHEN_FUNC_CALLS_LOG(TRANSFER_ERROR(&err));;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -231,8 +216,7 @@ ListError_t ListPushFront(List_t* list, const list_elem_t push_elem, size_t* pus
 
     ListError_t err = ListInsertBefore(list, GetHead(list), push_elem, push_place);
 
-    LOG_FUNC_EXIT();
-    return TRANSFER_ERROR(&err);
+    RETURN_WHEN_FUNC_CALLS_LOG(TRANSFER_ERROR(&err));
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -246,8 +230,7 @@ ListError_t ListPopBack(List_t* list, list_elem_t* pop_elem)
 
     ListError_t err = ListErase(list, GetTail(list), pop_elem);
 
-    LOG_FUNC_EXIT();
-    return TRANSFER_ERROR(&err);
+    RETURN_WHEN_FUNC_CALLS_LOG(TRANSFER_ERROR(&err));
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -261,8 +244,8 @@ ListError_t ListPopFront(List_t* list, list_elem_t* pop_elem)
 
     ListError_t err = ListErase(list, GetHead(list), pop_elem);
 
-    LOG_FUNC_EXIT();
-    return TRANSFER_ERROR(&err);
+    
+    RETURN_WHEN_FUNC_CALLS_LOG(TRANSFER_ERROR(&err));
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -276,7 +259,8 @@ static ListError_t ListIncreaseRealloc(List_t* list)
     const size_t now_capacity = GetCapacity(list);
 
     if (now_capacity > max_capacity / increase_realloc_coef)
-        return GET_STATUS_WARN(ListWarningType::TO_BIG_CAPACITY);
+        RETURN_WHEN_FUNC_CALLS_LOG(GET_STATUS_WARN(ListWarningType::TO_BIG_CAPACITY));
+        // return GET_STATUS_WARN(ListWarningType::TO_BIG_CAPACITY);
 
     const size_t new_capacity  = increase_realloc_coef * now_capacity; 
     const size_t realloc_size  = (new_capacity + 1)  * sizeof(ListElem);
@@ -284,7 +268,8 @@ static ListError_t ListIncreaseRealloc(List_t* list)
     list->data = (ListElem*) realloc(list->data, realloc_size);
 
     if (!list->data)
-        return GET_STATUS_WARN(ListWarningType::FAILED_REALLOCATE_DATA_AFTER_INSTERT);
+        RETURN_WHEN_FUNC_CALLS_LOG(GET_STATUS_WARN(ListWarningType::FAILED_REALLOCATE_DATA_AFTER_INSTERT));
+        // return GET_STATUS_WARN(ListWarningType::FAILED_REALLOCATE_DATA_AFTER_INSTERT);
     
     list->capacity = new_capacity;
 
@@ -292,8 +277,7 @@ static ListError_t ListIncreaseRealloc(List_t* list)
     UpdateFreeAfterIncreaseRealloc(list, now_capacity, new_capacity)
     );
 
-    LOG_FUNC_EXIT();
-    return GET_STATUS_OK();
+    RETURN_WHEN_FUNC_CALLS_LOG(GET_STATUS_OK());
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -314,8 +298,7 @@ static ListError_t UpdateFreeAfterIncreaseRealloc(List_t* list, size_t old_capac
     for (size_t i = old_capacity + 1; i < new_capacity; i++)
         data[i] = ListElemCtor(0, i + 1, i - 1);
 
-    LOG_FUNC_EXIT();
-    return GET_STATUS_OK();
+    RETURN_WHEN_FUNC_CALLS_LOG(GET_STATUS_OK());
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -323,13 +306,15 @@ static ListError_t UpdateFreeAfterIncreaseRealloc(List_t* list, size_t old_capac
 static ListElem ListElemCtor(const list_elem_t value, const size_t next, const size_t prev)
 {
     LOG_FUNC_ENTRY();
-    LOG_FUNC_EXIT();
-    return (ListElem)
+
+    ListElem elem = 
     {
         .value = value,
         .next  = next ,
         .prev  = prev ,
     };
+
+    RETURN_WHEN_FUNC_CALLS_LOG(elem);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -338,8 +323,9 @@ list_elem_t GetDataElemValue(const List_t* list, size_t data_i)
 {
     LOG_FUNC_ENTRY();
     assert(list);
-    LOG_FUNC_EXIT();
-    return list->data[data_i].value;
+    assert(list->data);
+
+    RETURN_WHEN_FUNC_CALLS_LOG(list->data[data_i].value);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -348,8 +334,9 @@ size_t GetTail(const List_t* list)
 {
     LOG_FUNC_ENTRY();
     assert(list);
-    LOG_FUNC_EXIT();
-    return list->data[0].prev;
+    assert(list->data);
+    
+    RETURN_WHEN_FUNC_CALLS_LOG(list->data[0].prev);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -358,8 +345,9 @@ size_t GetNextIndex(const List_t* list, size_t NowIndex)
 {
     LOG_FUNC_ENTRY();
     assert(list);
-    LOG_FUNC_EXIT();
-    return list->data[NowIndex].next;
+    assert(list->data);
+    
+    RETURN_WHEN_FUNC_CALLS_LOG(list->data[NowIndex].next);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -368,8 +356,9 @@ size_t GetPrevIndex(const List_t* list, size_t NowIndex)
 {
     LOG_FUNC_ENTRY();
     assert(list);
-    LOG_FUNC_EXIT();
-    return list->data[NowIndex].prev;
+    assert(list->data);
+
+    RETURN_WHEN_FUNC_CALLS_LOG(list->data[NowIndex].prev);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -378,8 +367,9 @@ size_t GetHead(const List_t* list)
 {
     LOG_FUNC_ENTRY();
     assert(list);
-    LOG_FUNC_EXIT();
-    return list->data[0].next;
+    assert(list->data);
+    
+    RETURN_WHEN_FUNC_CALLS_LOG(list->data[0].next);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -388,8 +378,8 @@ size_t GetFree(const List_t* list)
 {
     LOG_FUNC_ENTRY();
     assert(list);
-    LOG_FUNC_EXIT();
-    return list->free;
+    
+    RETURN_WHEN_FUNC_CALLS_LOG(list->free);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -398,8 +388,8 @@ size_t GetCapacity(const List_t* list)
 {
     LOG_FUNC_ENTRY();
     assert(list);
-    LOG_FUNC_EXIT();
-    return list->capacity;
+    
+    RETURN_WHEN_FUNC_CALLS_LOG(list->capacity);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -408,8 +398,8 @@ size_t GetDataSize(const List_t* list)
 {
     LOG_FUNC_ENTRY();
     assert(list);
-    LOG_FUNC_EXIT();
-    return list->size;
+    
+    RETURN_WHEN_FUNC_CALLS_LOG(list->size);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -418,8 +408,11 @@ static bool IsListFull(const List_t* list)
 {
     LOG_FUNC_ENTRY();
     assert(list);
-    LOG_FUNC_EXIT();
-    return GetCapacity(list) == GetDataSize(list) + 1;
+
+    const size_t capacity = GetCapacity(list);
+    const size_t size     = GetDataSize(list);
+
+    RETURN_WHEN_FUNC_CALLS_LOG(capacity == size + 1);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -428,22 +421,11 @@ static bool IsListEmpty(const List_t* list)
 {
     LOG_FUNC_ENTRY();
     assert(list);
-    LOG_FUNC_EXIT();
-    return GetDataSize(list) == 0;
-}
 
-//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    const size_t size = GetDataSize(list);
 
-static bool IsListReadyForDecreaseRealloc(const List_t* list)
-{
-    LOG_FUNC_ENTRY();
-    assert(list);
-
-    const size_t size     = GetDataSize(list); assert(size >= 1);
-    const size_t capacity = GetCapacity(list);
-
-    LOG_FUNC_EXIT();
-    return size <= capacity / decrease_realloc_coef;
+    
+    RETURN_WHEN_FUNC_CALLS_LOG(size == 0);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
