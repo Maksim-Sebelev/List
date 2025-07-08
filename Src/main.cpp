@@ -1,4 +1,4 @@
-#include "list_public/list_public.hpp"
+#include "list/list.hpp"
 #include "lib/lib.hpp"
 
 int main()
@@ -14,7 +14,7 @@ int main()
     size_t      data_pointer = 0;
     list_elem_t value = 0;
 
-    const size_t a = ~ (size_t) 0 / 8; 
+    const size_t a =( ~ (size_t) 0) / 1280000000; 
     // const size_t a = 17;
 
     for (size_t i = 0; i < a; i++)

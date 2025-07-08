@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "lib/lib.hpp"
+#include "list/err_parse/err_parse.hpp"
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -107,6 +108,18 @@ size_t      GetHead          (const List_t* list);
 size_t      GetFree          (const List_t* list);
 size_t      GetCapacity      (const List_t* list);
 size_t      GetDataSize      (const List_t* list);
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#define LIST_CTOR(         list, capacity              ) LIST_ASSERT(list, ListCtor        (list, capacity    ))
+#define LIST_DTOR(         list                        ) LIST_ASSERT(list, ListDtor        (list              ))
+#define LIST_INSERT_AFTER( list, ref_elem, value, place) LIST_ASSERT(list, ListInsertAfter (list, ref_elem, value, place))
+#define LIST_INSERT_BEFORE(list, ref_elem, value, place) LIST_ASSERT(list, ListInsertBefore(list, ref_elem, value, place))
+#define LIST_ERASE(        list, place,    value       ) LIST_ASSERT(list, ListErase       (list, place, value))
+#define LIST_PUSH_BACK(    list, value,    place       ) LIST_ASSERT(list, ListPushBack    (list, value, place))
+#define LIST_PUSH_FRONT(   list, value,    place       ) LIST_ASSERT(list, ListPushFront   (list, value, place))
+#define LIST_POP_BACK(     list, value                 ) LIST_ASSERT(list, ListPopBack     (list, value       ))
+#define LIST_POP_FRONT(    list, value                 ) LIST_ASSERT(list, ListPopFront    (list, value       ))
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
